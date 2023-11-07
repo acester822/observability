@@ -107,8 +107,8 @@ services:
         condition: service_started
     image: &mimirImage grafana/mimir:2.10.3
     volumes:
-      - ../configs/mimir/mimir-metrics.yaml:/etc/mimir.yaml # Note: Mimir use microservices-mode-metrics.yaml
-      - ./config/mimir:/etc/mimir
+      - ../configs/mimir/mimir-metrics.yaml:/etc/mimir.yaml
+      - ../configs/mimir:/etc/mimir
     command:
       - -config.file=/etc/mimir.yaml
       - -target=distributor
@@ -128,8 +128,8 @@ services:
   overrides-exporter: # Mimir
     image: *mimirImage
     volumes:
-      - ../../common/config/mimir/microservices-mode-metrics.yaml:/etc/mimir.yaml # Note: Mimir use microservices-mode-metrics.yaml
-      - ./config/mimir:/etc/mimir
+      - ../configs/mimir/mimir-metrics.yaml:/etc/mimir.yaml
+      - ../configs/mimir:/etc/mimir
     command:
       - -config.file=/etc/mimir.yaml
       - -target=overrides-exporter
@@ -140,8 +140,8 @@ services:
         condition: service_healthy
     image: *mimirImage
     volumes:
-      - ../../common/config/mimir/microservices-mode-metrics.yaml:/etc/mimir.yaml # Note: Mimir use microservices-mode-metrics.yaml
-      - ./config/mimir:/etc/mimir
+      - ../configs/mimir/mimir-metrics.yaml:/etc/mimir.yaml
+      - ../configs/mimir:/etc/mimir
     command:
       - -config.file=/etc/mimir.yaml
       - -target=querier
@@ -159,8 +159,8 @@ services:
         condition: service_healthy
     image: *mimirImage
     volumes:
-      - ../../common/config/mimir/microservices-mode-metrics.yaml:/etc/mimir.yaml # Note: Mimir use microservices-mode-metrics.yaml
-      - ./config/mimir:/etc/mimir
+      - ../configs/mimir/mimir-metrics.yaml:/etc/mimir.yaml
+      - ../configs/mimir:/etc/mimir
     command:
       - -config.file=/etc/mimir.yaml
       - -target=query-frontend
@@ -169,8 +169,8 @@ services:
   query-scheduler: # Mimir
     image: *mimirImage
     volumes:
-      - ../../common/config/mimir/microservices-mode-metrics.yaml:/etc/mimir.yaml # Note: Mimir use microservices-mode-metrics.yaml
-      - ./config/mimir:/etc/mimir
+      - ../configs/mimir/mimir-metrics.yaml:/etc/mimir.yaml
+      - ../configs/mimir:/etc/mimir
     command:
       - -config.file=/etc/mimir.yaml
       - -target=query-scheduler
@@ -188,8 +188,8 @@ services:
         condition: service_healthy
     image: *mimirImage
     volumes:
-      - ../../common/config/mimir/microservices-mode-metrics.yaml:/etc/mimir.yaml # Note: Mimir use microservices-mode-metrics.yaml
-      - ./config/mimir:/etc/mimir
+      - ../configs/mimir/mimir-metrics.yaml:/etc/mimir.yaml
+      - ../configs/mimir:/etc/mimir
     command:
       - -config.file=/etc/mimir.yaml
       - -target=ruler
@@ -209,8 +209,8 @@ services:
         condition: service_healthy
     image: *mimirImage
     volumes:
-      - ../../common/config/mimir/microservices-mode-metrics.yaml:/etc/mimir.yaml # Note: Mimir use microservices-mode-metrics.yaml
-      - ./config/mimir:/etc/mimir
+      - ../configs/mimir/mimir-metrics.yaml:/etc/mimir.yaml
+      - ../configs/mimir:/etc/mimir
     command:
       - -config.file=/etc/mimir.yaml
       - -target=alertmanager
@@ -225,8 +225,8 @@ services:
         condition: service_healthy
     image: *mimirImage
     volumes:
-      - ../../common/config/mimir/microservices-mode-metrics.yaml:/etc/mimir.yaml # Note: Mimir use microservices-mode-metrics.yaml
-      - ./config/mimir:/etc/mimir
+      - ../configs/mimir/mimir-metrics.yaml:/etc/mimir.yaml
+      - ../configs/mimir:/etc/mimir
     command:
       - -config.file=/etc/mimir.yaml
       - -target=compactor
@@ -241,8 +241,8 @@ services:
         condition: service_healthy
     image: *mimirImage
     volumes:
-      - ../../common/config/mimir/microservices-mode-metrics.yaml:/etc/mimir.yaml # Note: Mimir use microservices-mode-metrics.yaml
-      - ./config/mimir:/etc/mimir
+      - ../configs/mimir/mimir-metrics.yaml:/etc/mimir.yaml
+      - ../configs/mimir:/etc/mimir
     command:
       - -config.file=/etc/mimir.yaml
       - -target=ingester
@@ -261,8 +261,8 @@ services:
         condition: service_healthy
     image: *mimirImage
     volumes:
-      - ../../common/config/mimir/microservices-mode-metrics.yaml:/etc/mimir.yaml # Note: Mimir use microservices-mode-metrics.yaml
-      - ./config/mimir:/etc/mimir
+      - ../configs/mimir/mimir-metrics.yaml:/etc/mimir.yaml
+      - ../configs/mimir:/etc/mimir
     command:
       - -config.file=/etc/mimir.yaml
       - -target=store-gateway
@@ -277,7 +277,7 @@ services:
         condition: service_started
     image: &lokiImage grafana/loki:2.9.2
     volumes:
-      - ../../common/config/loki/microservices-mode-logs.yaml:/etc/loki.yaml # Note: Loki use microservices-mode-logs.yaml
+      - ../configs/loki-logs.yaml:/etc/loki.yaml
     command:
       - -config.file=/etc/loki.yaml
       - -target=distributor
@@ -300,7 +300,7 @@ services:
         condition: service_healthy
     image: *lokiImage
     volumes:
-      - ../../common/config/loki/microservices-mode-logs.yaml:/etc/loki.yaml # Note: Loki use microservices-mode-logs.yaml
+      - ../configs/loki-logs.yaml:/etc/loki.yaml
     command:
       - -config.file=/etc/loki.yaml
       - -target=ingester
@@ -319,7 +319,7 @@ services:
         condition: service_started
     image: *lokiImage
     volumes:
-      - ../../common/config/loki/microservices-mode-logs.yaml:/etc/loki.yaml # Note: Loki use microservices-mode-logs.yaml
+      - ../configs/loki-logs.yaml:/etc/loki.yaml
     command:
       - -config.file=/etc/loki.yaml
       - -target=query-frontend
@@ -327,7 +327,7 @@ services:
   query-scheduler: # Loki
     image: *lokiImage
     volumes:
-      - ../../common/config/loki/microservices-mode-logs.yaml:/etc/loki.yaml # Note: Loki use microservices-mode-logs.yaml
+      - ../configs/loki-logs.yaml:/etc/loki.yaml
     command:
       - -config.file=/etc/loki.yaml
       - -target=query-scheduler
@@ -344,7 +344,7 @@ services:
         condition: service_started
     image: *lokiImage
     volumes:
-      - ../../common/config/loki/microservices-mode-logs.yaml:/etc/loki.yaml # Note: Loki use microservices-mode-logs.yaml
+      - ../configs/loki-logs.yaml:/etc/loki.yaml
     command:
       - -config.file=/etc/loki.yaml
       - -target=querier
@@ -355,10 +355,10 @@ services:
         condition: service_healthy
     image: *lokiImage
     volumes:
-    - ../../common/config/loki/microservices-mode-logs.yaml:/etc/loki.yaml # Note: Loki use microservices-mode-logs.yaml
+      - ../configs/loki-logs.yaml:/etc/loki.yaml
     command:
-    - -config.file=/etc/loki.yaml
-    - -target=ruler
+      - -config.file=/etc/loki.yaml
+      - -target=ruler
     networks:
       default:
         aliases:
@@ -367,7 +367,7 @@ services:
   compactor: # Loki
     image: *lokiImage
     volumes:
-      - ../../common/config/loki/microservices-mode-logs.yaml:/etc/loki.yaml # Note: Loki use microservices-mode-logs.yaml
+      - ../configs/loki-logs.yaml:/etc/loki.yaml
     command:
       - -config.file=/etc/loki.yaml
       - -target=compactor
