@@ -7,7 +7,7 @@ services:
         condition: service_healthy
     image: grafana/agent:v0.37.2
     volumes:
-      - /mnt/Media/Monitoring/Configs/agent-flow:/etc/agent-config
+      - ../exporters/grafana-agent/agent-flow:/etc/agent-config
       - /var/run/docker.sock:/var/run/docker.sock
     entrypoint:
       - /bin/grafana-agent
@@ -31,8 +31,9 @@ services:
       default:
         aliases:
           - grafana-agent-cluster
+
   minio: # All
-    image: minio/minio:RELEASE.2023-07-21T21-12-44Z
+    image: minio/minio:RELEASE.2023-11-01T01-57-10Z
     entrypoint:
       - sh
       - -euc
@@ -47,10 +48,10 @@ services:
       - MINIO_ROOT_PASSWORD=admin_password
       - MINIO_PROMETHEUS_AUTH_TYPE=public
       - MINIO_UPDATE=off
-      - MINIO_PROMETHEUS_URL="http://gateway:8500/prometheus"
-      - MINIO_PROMETHEUS_JOB_ID="integrations/minio"
+      # - MINIO_PROMETHEUS_URL="http://gateway:8500/prometheus"
+      # - MINIO_PROMETHEUS_JOB_ID="integrations/minio"
     volumes:
-      - /mnt/Media/Monitoring/Data:/data:delegated
+      - ../Data:/data:delegated
     healthcheck:
       test: ["CMD", "curl","-f","http://localhost:9000/minio/health/live"]
       interval: 10s
@@ -67,7 +68,7 @@ services:
         condition: service_healthy
     image: nginxinc/nginx-unprivileged:1.25-alpine
     volumes:
-      - /mnt/Media/Monitoring/Configs/nginx:/etc/nginx/templates
+      - ../configs/nginx:/etc/nginx/templates
     environment:
       - NGINX_ENVSUBST_OUTPUT_DIR=/etc/nginx
       - DISTRIBUTOR_HOST=mimir-write
@@ -100,57 +101,153 @@ services:
       - "4317" # Tempo
       - "4040" # Pyro
 
-  mimir-backend: # Metrics
+  distributor: # Mimir
     depends_on:
-      minio:
-        condition: service_healthy
+      ingester:
+        condition: service_started
     image: &mimirImage grafana/mimir:2.10.3
+    volumes:
+      - ../../common/config/mimir/microservices-mode-metrics.yaml:/etc/mimir.yaml # Note: Mimir use microservices-mode-metrics.yaml
+      - ./config/mimir:/etc/mimir
     command:
       - -config.file=/etc/mimir.yaml
-      - -target=backend
-    volumes:
-      - /mnt/Media/Monitoring/Configs/mimir/read-write-mode-metrics.yaml:/etc/mimir.yaml # Note: Mimir use read-write-mode-metrics.yaml
-      - /mnt/Media/Monitoring/Configs/mimir:/etc/mimir
+      - -target=distributor
+     # - -log.level=warn
     healthcheck:
-      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8500/ready || exit 1" ]
+      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/ready || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      replicas: 2
+    networks:
+      default:
+        aliases:
+          - mimir-memberlist
+
+  overrides-exporter: # Mimir
+    image: *mimirImage
+    volumes:
+      - ../../common/config/mimir/microservices-mode-metrics.yaml:/etc/mimir.yaml # Note: Mimir use microservices-mode-metrics.yaml
+      - ./config/mimir:/etc/mimir
+    command:
+      - -config.file=/etc/mimir.yaml
+      - -target=overrides-exporter
+
+  querier: # Mimir
+    depends_on:
+      query-scheduler:
+        condition: service_healthy
+    image: *mimirImage
+    volumes:
+      - ../../common/config/mimir/microservices-mode-metrics.yaml:/etc/mimir.yaml # Note: Mimir use microservices-mode-metrics.yaml
+      - ./config/mimir:/etc/mimir
+    command:
+      - -config.file=/etc/mimir.yaml
+      - -target=querier
+      - -log.level=error
+    deploy:
+      replicas: 2
+    networks:
+      default:
+        aliases:
+          - mimir-memberlist
+
+  query-frontend: # Mimir
+    depends_on:
+      query-scheduler:
+        condition: service_healthy
+    image: *mimirImage
+    volumes:
+      - ../../common/config/mimir/microservices-mode-metrics.yaml:/etc/mimir.yaml # Note: Mimir use microservices-mode-metrics.yaml
+      - ./config/mimir:/etc/mimir
+    command:
+      - -config.file=/etc/mimir.yaml
+      - -target=query-frontend
+      - -log.level=error
+
+  query-scheduler: # Mimir
+    image: *mimirImage
+    volumes:
+      - ../../common/config/mimir/microservices-mode-metrics.yaml:/etc/mimir.yaml # Note: Mimir use microservices-mode-metrics.yaml
+      - ./config/mimir:/etc/mimir
+    command:
+      - -config.file=/etc/mimir.yaml
+      - -target=query-scheduler
+    healthcheck:
+      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/ready || exit 1" ]
       interval: 10s
       timeout: 5s
       retries: 5
     deploy:
       replicas: 2
 
-  mimir-read: # Metrics
+  ruler: # Mimir
     depends_on:
       minio:
         condition: service_healthy
     image: *mimirImage
+    volumes:
+      - ../../common/config/mimir/microservices-mode-metrics.yaml:/etc/mimir.yaml # Note: Mimir use microservices-mode-metrics.yaml
+      - ./config/mimir:/etc/mimir
     command:
       - -config.file=/etc/mimir.yaml
-      - -target=read
-    volumes:
-      - /mnt/Media/Monitoring/Configs/mimir/read-write-mode-metrics.yaml:/etc/mimir.yaml # Note: Mimir use read-write-mode-metrics.yaml
-      - /mnt/Media/Monitoring/Configs/mimir:/etc/mimir
-    deploy:
-      replicas: 2
+      - -target=ruler
+    healthcheck:
+      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/ready || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      default:
+        aliases:
+          - mimir-memberlist
 
-  mimir-write: # Metrics
+  alertmanager: # Mimir
     depends_on:
       minio:
         condition: service_healthy
     image: *mimirImage
+    volumes:
+      - ../../common/config/mimir/microservices-mode-metrics.yaml:/etc/mimir.yaml # Note: Mimir use microservices-mode-metrics.yaml
+      - ./config/mimir:/etc/mimir
     command:
       - -config.file=/etc/mimir.yaml
-      - -target=write
+      - -target=alertmanager
+    networks:
+      default:
+        aliases:
+          - mimir-memberlist
+
+  compactor: # Mimir
+    depends_on:
+      minio:
+        condition: service_healthy
+    image: *mimirImage
     volumes:
-      - /mnt/Media/Monitoring/Configs/mimir/read-write-mode-metrics.yaml:/etc/mimir.yaml # Note: Mimir use read-write-mode-metrics.yaml
-      - /mnt/Media/Monitoring/Configs/mimir:/etc/mimir
+      - ../../common/config/mimir/microservices-mode-metrics.yaml:/etc/mimir.yaml # Note: Mimir use microservices-mode-metrics.yaml
+      - ./config/mimir:/etc/mimir
+    command:
+      - -config.file=/etc/mimir.yaml
+      - -target=compactor
+    networks:
+      default:
+        aliases:
+          - mimir-memberlist
+
+  ingester: # Mimir
+    depends_on:
+      minio:
+        condition: service_healthy
+    image: *mimirImage
+    volumes:
+      - ../../common/config/mimir/microservices-mode-metrics.yaml:/etc/mimir.yaml # Note: Mimir use microservices-mode-metrics.yaml
+      - ./config/mimir:/etc/mimir
+    command:
+      - -config.file=/etc/mimir.yaml
+      - -target=ingester
     ports:
-      - "8500"
-    healthcheck:
-      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8500/ready || exit 1" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      - "8080"
     deploy:
       replicas: 3
     networks:
@@ -158,18 +255,33 @@ services:
         aliases:
           - mimir-memberlist
 
-  loki-read: # Loki
+  store-gateway: # Mimir
     depends_on:
       minio:
         condition: service_healthy
+    image: *mimirImage
+    volumes:
+      - ../../common/config/mimir/microservices-mode-metrics.yaml:/etc/mimir.yaml # Note: Mimir use microservices-mode-metrics.yaml
+      - ./config/mimir:/etc/mimir
+    command:
+      - -config.file=/etc/mimir.yaml
+      - -target=store-gateway
+    networks:
+      default:
+        aliases:
+          - mimir-memberlist
+
+  distributor: # Loki
+    depends_on:
+      ingester:
+        condition: service_started
     image: &lokiImage grafana/loki:2.9.2
+    volumes:
+      - ../../common/config/loki/microservices-mode-logs.yaml:/etc/loki.yaml # Note: Loki use microservices-mode-logs.yaml
     command:
       - -config.file=/etc/loki.yaml
-      - -target=read
-      - -legacy-read-mode=false
-      - -log.level=warn
-    volumes:
-      - /mnt/Media/Monitoring/Configs/loki/read-write-mode-logs.yaml:/etc/loki.yaml
+      - -target=distributor
+     # - -log.level=warn
     healthcheck:
       test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3100/ready || exit 1" ]
       interval: 10s
@@ -182,23 +294,18 @@ services:
         aliases:
           - loki-memberlist
 
-  loki-write: # Loki
+  ingester: # Loki
     depends_on:
       minio:
         condition: service_healthy
     image: *lokiImage
+    volumes:
+      - ../../common/config/loki/microservices-mode-logs.yaml:/etc/loki.yaml # Note: Loki use microservices-mode-logs.yaml
     command:
       - -config.file=/etc/loki.yaml
-      - -target=write
-    volumes:
-      - /mnt/Media/Monitoring/Configs/loki/read-write-mode-logs.yaml:/etc/loki.yaml
+      - -target=ingester
     ports:
       - "3100"
-    healthcheck:
-      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3100/ready || exit 1" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
     deploy:
       replicas: 3
     networks:
@@ -206,24 +313,68 @@ services:
         aliases:
           - loki-memberlist
 
-  loki-backend: # Loki
+  query-frontend: # Loki
+    depends_on:
+      query-scheduler:
+        condition: service_started
+    image: *lokiImage
+    volumes:
+      - ../../common/config/loki/microservices-mode-logs.yaml:/etc/loki.yaml # Note: Loki use microservices-mode-logs.yaml
+    command:
+      - -config.file=/etc/loki.yaml
+      - -target=query-frontend
+
+  query-scheduler: # Loki
+    image: *lokiImage
+    volumes:
+      - ../../common/config/loki/microservices-mode-logs.yaml:/etc/loki.yaml # Note: Loki use microservices-mode-logs.yaml
+    command:
+      - -config.file=/etc/loki.yaml
+      - -target=query-scheduler
+    deploy:
+      replicas: 2
+    networks:
+      default:
+        aliases:
+          - loki-memberlist
+
+  querier: # Loki
+    depends_on:
+      query-scheduler:
+        condition: service_started
+    image: *lokiImage
+    volumes:
+      - ../../common/config/loki/microservices-mode-logs.yaml:/etc/loki.yaml # Note: Loki use microservices-mode-logs.yaml
+    command:
+      - -config.file=/etc/loki.yaml
+      - -target=querier
+
+  ruler: # Loki
     depends_on:
       minio:
         condition: service_healthy
     image: *lokiImage
-    deploy:
-      replicas: 2
+    volumes:
+    - ../../common/config/loki/microservices-mode-logs.yaml:/etc/loki.yaml # Note: Loki use microservices-mode-logs.yaml
+    command:
+    - -config.file=/etc/loki.yaml
+    - -target=ruler
+    networks:
+      default:
+        aliases:
+          - loki-memberlist
+
+  compactor: # Loki
+    image: *lokiImage
+    volumes:
+      - ../../common/config/loki/microservices-mode-logs.yaml:/etc/loki.yaml # Note: Loki use microservices-mode-logs.yaml
     command:
       - -config.file=/etc/loki.yaml
-      - -target=backend
-      - -legacy-read-mode=false
-    volumes:
-      - /mnt/Media/Monitoring/Configs/loki/read-write-mode-logs.yaml:/etc/loki.yaml
-    healthcheck:
-      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3100/ready || exit 1" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      - -target=compactor
+    networks:
+      default:
+        aliases:
+          - loki-memberlist
 
   tempo-distributor: # Tempo
     depends_on:
@@ -441,7 +592,7 @@ services:
     ports:
       - "3000:3000"
 
-  opentelemetry-collector:
+  opentelemetry-collector: #All
     container_name: opentelemetry-collector
     image: otel/opentelemetry-collector-contrib:latest
     volumes:
