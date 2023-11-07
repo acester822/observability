@@ -60,35 +60,58 @@ services:
     ports:
       - "9001:9001"
 
-  gateway: # All
+  gateway-read: # All
     depends_on:
       mimir-write:
         condition: service_healthy
       mimir-backend:
         condition: service_healthy
-    image: nginxinc/nginx-unprivileged:1.25-alpine
+    image: &nginx nginxinc/nginx-unprivileged:1.25-alpine
     volumes:
-      - ../configs/nginx:/etc/nginx/templates
+      - ../configs/nginx/read:/etc/nginx/templates
+    environment:
+      - NGINX_ENVSUBST_OUTPUT_DIR=/etc/nginx
+      - QUERY_FRONTEND_HOST=mimir-frontend
+      - LOKI_QUERY_FRONTEND_HOST=loki-frontend
+      - TEMPO_QUERY_FRONTEND_HOST=tempo-frontend
+      - PYRO_QUERY_FRONTEND_HOST=pyro-frontend
+      - LOKI_QUERY_SCHEDULER_HOST=loki-scheduler
+      - LOKI_QUERIER_HOST=loki-querier      
+    healthcheck:
+      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8500/ || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "8500" # Mimir
+      - "3100" # Loki
+      - "3200" # Tempo
+      - "4317" # Tempo
+      - "4040" # Pyro
+
+  gateway-write: # All
+    depends_on:
+      mimir-write:
+        condition: service_healthy
+      mimir-backend:
+        condition: service_healthy
+    image: *nginx
+    volumes:
+      - ../configs/nginx/write:/etc/nginx/templates
     environment:
       - NGINX_ENVSUBST_OUTPUT_DIR=/etc/nginx
       - DISTRIBUTOR_HOST=mimir-write
-      - QUERY_FRONTEND_HOST=mimir-read
       - ALERT_MANAGER_HOST=mimir-backend
       - RULER_HOST=mimir-backend
       - COMPACTOR_HOST=mimir-backend
       - LOKI_DISTRIBUTOR_HOST=loki-write
       - LOKI_INGESTER_HOST=loki-write
       - LOKI_RULER_HOST=loki-backend
-      - LOKI_QUERY_FRONTEND_HOST=loki-read
-      - LOKI_QUERY_SCHEDULER_HOST=loki-read
-      - LOKI_QUERIER_HOST=loki-read
       - LOKI_COMPACTOR_HOST=loki-backend
       - TEMPO_DISTRIBUTOR_HOST=tempo-distributor
       - TEMPO_INGESTER_HOST=tempo-ingester
-      - TEMPO_QUERY_FRONTEND_HOST=tempo-frontend
       - TEMPO_COMPACTOR_HOST=tempo-compactor
       - PYRO_DISTRIBUTOR_HOST=pyro-distributor
-      - PYRO_QUERY_FRONTEND_HOST=pyro-frontend
     healthcheck:
       test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8500/ || exit 1" ]
       interval: 10s
