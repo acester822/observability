@@ -62,9 +62,9 @@ services:
 
   gateway-read: # All
     depends_on:
-      mimir-write:
+      mimir-frontend:
         condition: service_healthy
-      mimir-backend:
+      loki-frontend:
         condition: service_healthy
     image: &nginx nginxinc/nginx-unprivileged:1.25-alpine
     volumes:
@@ -83,7 +83,7 @@ services:
       timeout: 5s
       retries: 5
     ports:
-      - "8500" # Mimir
+      - "8080" # Mimir
       - "3100" # Loki
       - "3200" # Tempo
       - "4317" # Tempo

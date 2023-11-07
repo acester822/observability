@@ -10,7 +10,6 @@ server {
 
     proxy_set_header X-Scope-OrgID $ensured_x_scope_orgid;
 
-  {
     # Distributor endpoints
     location = /api/prom/push {
       proxy_pass      http://${LOKI_DISTRIBUTOR_HOST}:3101$request_uri;
@@ -85,7 +84,7 @@ server {
     }
 
     # Config endpoints
-    location = /config 
+    location = /config {
       proxy_pass      http://${LOKI_COMPACTOR_HOST}:3101$request_uri;
     }
   }
