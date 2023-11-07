@@ -118,11 +118,11 @@ services:
       timeout: 5s
       retries: 5
     ports:
-      - "8500" # Mimir
-      - "3100" # Loki
-      - "3200" # Tempo
-      - "4317" # Tempo
-      - "4040" # Pyro
+      - "8501" # Mimir
+      - "3101" # Loki
+      - "3201" # Tempo
+      - "4319" # Tempo
+      - "4041" # Pyro
 
   grafana: #All
     image: grafana/grafana:10.2.0
