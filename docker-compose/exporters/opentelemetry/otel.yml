@@ -1,0 +1,16 @@
+
+# this is just for tempo
+receivers:
+  otlp:
+    protocols:
+      grpc:
+exporters:
+  otlp:
+    endpoint: tempo:4317
+    tls:
+      insecure: true
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      exporters: [otlp]

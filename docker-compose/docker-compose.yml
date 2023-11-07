@@ -88,6 +88,12 @@ services:
       - "3200" # Tempo
       - "4317" # Tempo
       - "4040" # Pyro
+      - "14268:14268"  # jaeger ingest
+      - "3200:3200"   # tempo
+      - "9095:9095" # tempo grpc
+      - "4317:4317"  # otlp grpc
+      - "4318:4318"  # otlp http
+      - "9411:9411"   # zipkin
 
   gateway-write: # All
     depends_on:
@@ -639,3 +645,18 @@ services:
       - MIMIR_TENANT_ID=anonymous
     command: >-
       rules load /mimir-mixin/rules.yaml /mimir-mixin/alerts.yaml /loki-mixin/rules.yaml /loki-mixin/alerts.yaml /tempo-mixin/rules.yaml /tempo-mixin/alerts.yaml 
+
+
+
+  tempo:
+    image: grafana/tempo:latest
+    command: [ "-config.file=/etc/tempo.yml" ]
+    volumes:
+      - ./tempo/tempo.yml:/etc/tempo.yml
+    ports:
+      - "14268:14268"  # jaeger ingest
+      - "3200:3200"   # tempo
+      - "9095:9095" # tempo grpc
+      - "4317:4317"  # otlp grpc
+      - "4318:4318"  # otlp http
+      - "9411:9411"   # zipkin

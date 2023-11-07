@@ -1,6 +1,10 @@
 analytics:
   reporting_enabled: false
 
+tracing:
+  enabled: true
+  profiling_enabled: true
+
 storage:
   backend: s3
   s3:
