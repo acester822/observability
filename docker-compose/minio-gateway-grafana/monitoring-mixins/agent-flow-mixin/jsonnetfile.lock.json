@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "dependencies": [
+    {
+      "source": {
+        "git": {
+          "remote": "https://github.com/grafana/agent.git",
+          "subdir": "operations/agent-flow-mixin"
+        }
+      },
+      "version": "5a7c16a8d6511535d815d50d974ca26f4e99524a",
+      "sum": "SoE2uqP81c1mYT38Q39mfWAAuv9ItXKO/hkIJp+hM9E="
+    }
+  ],
+  "legacyImports": false
+}

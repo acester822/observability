@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "dependencies": [
+    {
+      "source": {
+        "git": {
+          "remote": "https://github.com/grafana/jsonnet-libs.git",
+          "subdir": "grafana-builder"
+        }
+      },
+      "version": "197b22d7a053fe6d03a40f26abda064d4b717620",
+      "sum": "xEFMv4+ObwP5L1Wu0XK5agWci4AJzNApys6iKAQxLlQ="
+    },
+    {
+      "source": {
+        "git": {
+          "remote": "https://github.com/grafana/jsonnet-libs.git",
+          "subdir": "mixin-utils"
+        }
+      },
+      "version": "197b22d7a053fe6d03a40f26abda064d4b717620",
+      "sum": "p5hRaq4GhUbgKZHtKqYmC8fgg8FoWJDkCN6PbonEXlk="
+    },
+    {
+      "source": {
+        "git": {
+          "remote": "https://github.com/grafana/tempo.git",
+          "subdir": "operations/tempo-mixin"
+        }
+      },
+      "version": "5392f8f6e050ae8c0d8ce19452aebdb6164440d7",
+      "sum": "TLHi+rX9ClUosGfAF1B89KEEsViUOMAMmAqfx7g1ZoY="
+    }
+  ],
+  "legacyImports": false
+}
