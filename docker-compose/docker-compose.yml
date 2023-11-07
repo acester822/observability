@@ -107,7 +107,7 @@ services:
         condition: service_started
     image: &mimirImage grafana/mimir:2.10.3
     volumes:
-      - ../../common/config/mimir/microservices-mode-metrics.yaml:/etc/mimir.yaml # Note: Mimir use microservices-mode-metrics.yaml
+      - ../configs/mimir/mimir-metrics.yaml:/etc/mimir.yaml # Note: Mimir use microservices-mode-metrics.yaml
       - ./config/mimir:/etc/mimir
     command:
       - -config.file=/etc/mimir.yaml
