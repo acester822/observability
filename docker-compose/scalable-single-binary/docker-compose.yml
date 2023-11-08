@@ -80,46 +80,7 @@ services:
     ports:
       - "9001:9001"
       
-  gateway: # All
-    depends_on:
-      mimir-write:
-        condition: service_healthy
-      mimir-backend:
-        condition: service_healthy
-    image: nginxinc/nginx-unprivileged:1.25-alpine
-    volumes:
-      - /mnt/Media/Monitoring/Configs/nginx:/etc/nginx/templates
-    environment:
-      - NGINX_ENVSUBST_OUTPUT_DIR=/etc/nginx
-      - DISTRIBUTOR_HOST=mimir-write
-      - QUERY_FRONTEND_HOST=mimir-read
-      - ALERT_MANAGER_HOST=mimir-backend
-      - RULER_HOST=mimir-backend
-      - COMPACTOR_HOST=mimir-backend
-      - LOKI_DISTRIBUTOR_HOST=loki-write
-      - LOKI_INGESTER_HOST=loki-write
-      - LOKI_RULER_HOST=loki-backend
-      - LOKI_QUERY_FRONTEND_HOST=loki-read
-      - LOKI_QUERY_SCHEDULER_HOST=loki-read
-      - LOKI_QUERIER_HOST=loki-read
-      - LOKI_COMPACTOR_HOST=loki-backend
-      - TEMPO_DISTRIBUTOR_HOST=tempo-distributor
-      - TEMPO_INGESTER_HOST=tempo-ingester
-      - TEMPO_QUERY_FRONTEND_HOST=tempo-frontend
-      - TEMPO_COMPACTOR_HOST=tempo-compactor
-      - PYRO_DISTRIBUTOR_HOST=pyro-distributor
-      - PYRO_QUERY_FRONTEND_HOST=pyro-frontend
-    healthcheck:
-      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8500/ || exit 1" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    ports:
-      - "8500" # Mimir
-      - "3100" # Loki
-      - "3200" # Tempo
-      - "4317" # Tempo
-      - "4040" # Pyro
+
 
   gateway: #Mimir-Metrics
     depends_on:
@@ -128,7 +89,6 @@ services:
     image: nginxinc/nginx-unprivileged:1.25-alpine
     volumes:
       - ../../common/config/nginx:/etc/nginx/templates
-      - ../../common/config/mimir/gateway_mimir.conf.template:/etc/nginx/templates/gateway_mimir.conf.template
     environment:
       - NGINX_ENVSUBST_OUTPUT_DIR=/etc/nginx
       # nginx envsubst does not support default values like Docker Compose do when using ${MY_VAR:-My Default}.
@@ -140,6 +100,17 @@ services:
       - RULER_HOST=mimir
       - QUERY_FRONTEND_HOST=mimir
       - COMPACTOR_HOST=mimir
+      - DISTRIBUTOR_HOST=tempo
+      - INGESTER_HOST=tempo
+      - QUERY_FRONTEND_HOST=tempo
+      - COMPACTOR_HOST=tempo
+      - DISTRIBUTOR_HOST=loki
+      - INGESTER_HOST=loki
+      - RULER_HOST=loki
+      - QUERY_FRONTEND_HOST=loki
+      - QUERY_SCHEDULER_HOST=loki
+      - QUERIER_HOST=loki
+      - COMPACTOR_HOST=loki      
     healthcheck:
       test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/ || exit 1" ]
       interval: 10s
@@ -147,35 +118,13 @@ services:
       retries: 5
     ports:
       - "8080"
-      
-  gateway: #Tempo-Traces
-    depends_on:
-      tempo:
-        condition: service_healthy
-    image: nginxinc/nginx-unprivileged:1.25-alpine
-    restart: always
-    volumes:
-      - ../../common/config/nginx:/etc/nginx/templates
-      - ../../common/config/tempo/gateway_tempo.conf.template:/etc/nginx/templates/gateway_tempo.conf.template
-    environment:
-      - NGINX_ENVSUBST_OUTPUT_DIR=/etc/nginx
-      - DISTRIBUTOR_HOST=tempo
-      - INGESTER_HOST=tempo
-      - QUERY_FRONTEND_HOST=tempo
-      - COMPACTOR_HOST=tempo
-    healthcheck:
-      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3200/ || exit 1" ]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-    ports:
       - "14268:14268"  # jaeger ingest
       - "3200:3200"   # tempo
       - "9095:9095" # tempo grpc
       - "4317:4317"  # otlp grpc
       - "4318:4318"  # otlp http
       - "9411:9411"   # zipkin
-      
+
   gateway: #Loki-Logs
     depends_on:
       loki:
@@ -186,13 +135,7 @@ services:
       - ../../common/config/loki/gateway_loki.conf.template:/etc/nginx/templates/gateway_loki.conf.template
     environment:
       - NGINX_ENVSUBST_OUTPUT_DIR=/etc/nginx
-      - DISTRIBUTOR_HOST=loki
-      - INGESTER_HOST=loki
-      - RULER_HOST=loki
-      - QUERY_FRONTEND_HOST=loki
-      - QUERY_SCHEDULER_HOST=loki
-      - QUERIER_HOST=loki
-      - COMPACTOR_HOST=loki
+
     healthcheck:
       test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3100/ || exit 1" ]
       interval: 10s
