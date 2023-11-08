@@ -20,6 +20,66 @@ include:
   
 
 services:
+
+  agent: # All
+    depends_on:
+      gateway:
+        condition: service_healthy
+    image: grafana/agent:v0.37.2
+    volumes:
+      - ../exporters/grafana-agent/agent-flow:/etc/agent-config
+      - /var/run/docker.sock:/var/run/docker.sock
+    entrypoint:
+      - /bin/grafana-agent
+      - run
+      - /etc/agent-config/
+      - --server.http.listen-addr=0.0.0.0:12345
+      - --cluster.enabled=true
+      - --cluster.join-addresses=grafana-agent-cluster:12345
+      - --disable-reporting=true
+    environment:
+      - AGENT_MODE=flow
+      - AGENT_CONFIG_FOLDER=/etc/agent-config
+    healthcheck:
+      disable: true
+    ports:
+      - "12345"
+    # scale up support
+    deploy:
+      replicas: 2
+    networks:
+      default:
+        aliases:
+          - grafana-agent-cluster
+
+  minio: # All
+    image: minio/minio:RELEASE.2023-11-01T01-57-10Z
+    entrypoint:
+      - sh
+      - -euc
+      - |
+        mkdir -p /data/mimir-data /data/mimir-rules /data/mimir-alertmanager && \
+        mkdir -p /data/loki-data /data/loki-rules && \
+        mkdir -p /data/tempo-data  && \
+        mkdir -p /data/pyroscope-data && \
+        minio server /data --console-address ':9001'
+    environment:
+      - MINIO_ROOT_USER=admin
+      - MINIO_ROOT_PASSWORD=admin_password
+      - MINIO_PROMETHEUS_AUTH_TYPE=public
+      - MINIO_UPDATE=off
+      # - MINIO_PROMETHEUS_URL="http://gateway:8500/prometheus"
+      # - MINIO_PROMETHEUS_JOB_ID="integrations/minio"
+    volumes:
+      - ../Data:/data:delegated
+    healthcheck:
+      test: ["CMD", "curl","-f","http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "9001:9001"
+
   gateway: #Mimir-Metrics
     depends_on:
       mimir:
@@ -46,6 +106,61 @@ services:
       retries: 5
     ports:
       - "8080"
+      
+  gateway: #Tempo-Traces
+    depends_on:
+      tempo:
+        condition: service_healthy
+    image: nginxinc/nginx-unprivileged:1.25-alpine
+    restart: always
+    volumes:
+      - ../../common/config/nginx:/etc/nginx/templates
+      - ../../common/config/tempo/gateway_tempo.conf.template:/etc/nginx/templates/gateway_tempo.conf.template
+    environment:
+      - NGINX_ENVSUBST_OUTPUT_DIR=/etc/nginx
+      - DISTRIBUTOR_HOST=tempo
+      - INGESTER_HOST=tempo
+      - QUERY_FRONTEND_HOST=tempo
+      - COMPACTOR_HOST=tempo
+    healthcheck:
+      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3200/ || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "14268:14268"  # jaeger ingest
+      - "3200:3200"   # tempo
+      - "9095:9095" # tempo grpc
+      - "4317:4317"  # otlp grpc
+      - "4318:4318"  # otlp http
+      - "9411:9411"   # zipkin
+      
+  gateway: #Loki-Logs
+    depends_on:
+      loki:
+        condition: service_healthy
+    image: nginxinc/nginx-unprivileged:1.25-alpine
+    volumes:
+      - ../../common/config/nginx:/etc/nginx/templates
+      - ../../common/config/loki/gateway_loki.conf.template:/etc/nginx/templates/gateway_loki.conf.template
+    environment:
+      - NGINX_ENVSUBST_OUTPUT_DIR=/etc/nginx
+      - DISTRIBUTOR_HOST=loki
+      - INGESTER_HOST=loki
+      - RULER_HOST=loki
+      - QUERY_FRONTEND_HOST=loki
+      - QUERY_SCHEDULER_HOST=loki
+      - QUERIER_HOST=loki
+      - COMPACTOR_HOST=loki
+    healthcheck:
+      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3100/ || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "3100"
+      
+
 
   mimir: #Mimir-Metrics
     depends_on:
@@ -74,45 +189,9 @@ services:
         aliases:
           - mimir-memberlist
 
-  grafana: #Mimir-Metrics
-    image: grafana/grafana:10.2.0
-    command:
-      - --config=/etc/grafana-config/grafana.ini
-    volumes:
-      - ../../common/config/grafana/grafana.ini:/etc/grafana-config/grafana.ini
-      - ../../common/config/grafana/dashboards:/var/lib/grafana/dashboards
-      - ../../common/config/grafana/provisioning:/etc/grafana/provisioning
-      - ../../common/config/mimir/datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml    # load datasources
-      - ../../../monitoring-mixins/mimir-mixin/deploy/dashboards_out:/var/lib/grafana/dashboards/mimir-mixin # load dashboards
-    environment:
-      - GF_LOG_LEVEL=error
-      - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD:-admin_password}
-    ports:
-      - "3000:3000"
 
-  gateway: #Tempo-Traces
-    depends_on:
-      tempo:
-        condition: service_healthy
-    image: nginxinc/nginx-unprivileged:1.25-alpine
-    restart: always
-    volumes:
-      - ../../common/config/nginx:/etc/nginx/templates
-      - ../../common/config/tempo/gateway_tempo.conf.template:/etc/nginx/templates/gateway_tempo.conf.template
-    environment:
-      - NGINX_ENVSUBST_OUTPUT_DIR=/etc/nginx
-      - DISTRIBUTOR_HOST=tempo
-      - INGESTER_HOST=tempo
-      - QUERY_FRONTEND_HOST=tempo
-      - COMPACTOR_HOST=tempo
-    healthcheck:
-      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3200/ || exit 1" ]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-    ports:
-      - "3200"
-      - "4317"
+
+
 
   tempo: #Tempo-Traces
     depends_on:
@@ -142,51 +221,9 @@ services:
         aliases:
           - tempo-memberlist
 
-  grafana: #Tempo-Traces
-    depends_on:
-      minio:
-        condition: service_started
-    image: grafana/grafana:10.2.0
-    command:
-      - --config=/etc/grafana-config/grafana.ini
-    volumes:
-      - ../../common/config/grafana/grafana.ini:/etc/grafana-config/grafana.ini
-      - ../../common/config/grafana/dashboards:/var/lib/grafana/dashboards
-      - ../../common/config/grafana/provisioning:/etc/grafana/provisioning
-      - ../../common/config/tempo/datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml # load datasources
-    environment:
-      - GF_LOG_LEVEL=error
-      - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD:-admin_password}
-      - GF_FEATURE_TOGGLES_ENABLE=traceqlEditor
-      # - GF_TRACING_OPENTELEMETRY_OTLP_ADDRESS=agent:4317
-      # - GF_TRACING_OPENTELEMETRY_CUSTOM_ATTRIBUTES=cluster:docker-compose,namespace:monitoring
-    ports:
-      - "3000:3000"
 
-  gateway: #Loki-Logs
-    depends_on:
-      loki:
-        condition: service_healthy
-    image: nginxinc/nginx-unprivileged:1.25-alpine
-    volumes:
-      - ../../common/config/nginx:/etc/nginx/templates
-      - ../../common/config/loki/gateway_loki.conf.template:/etc/nginx/templates/gateway_loki.conf.template
-    environment:
-      - NGINX_ENVSUBST_OUTPUT_DIR=/etc/nginx
-      - DISTRIBUTOR_HOST=loki
-      - INGESTER_HOST=loki
-      - RULER_HOST=loki
-      - QUERY_FRONTEND_HOST=loki
-      - QUERY_SCHEDULER_HOST=loki
-      - QUERIER_HOST=loki
-      - COMPACTOR_HOST=loki
-    healthcheck:
-      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3100/ || exit 1" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    ports:
-      - "3100"
+
+
 
   loki: #Loki-Logs
     depends_on:
@@ -215,20 +252,7 @@ services:
         aliases:
           - loki-memberlist
 
-  grafana: #Loki-Logs
-    image: grafana/grafana:10.2.0
-    command:
-      - --config=/etc/grafana-config/grafana.ini
-    volumes:
-      - ../../common/config/grafana/grafana.ini:/etc/grafana-config/grafana.ini
-      - ../../common/config/grafana/dashboards:/var/lib/grafana/dashboards
-      - ../../common/config/grafana/provisioning:/etc/grafana/provisioning
-      - ../../common/config/loki/datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml # load datasources
-    environment:
-      - GF_LOG_LEVEL=warn
-      - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD:-admin_password}
-    ports:
-      - "3000:3000"
+
 
   pyroscope: #Pyro-Profiles
     image: grafana/pyroscope:1.1.5
@@ -238,14 +262,14 @@ services:
       - -config.file=/etc/config.yaml
       - -target=all
       - -log.level=warn
-    # ports:
-    #   - "4040:4040"
+    ports:
+      - "4040:4040"
     networks:
       default:
         aliases:
           - gateway
 
-  load-loki-rules:
+  load-rules-all:
     depends_on:
       loki:
         condition: service_healthy
@@ -253,82 +277,38 @@ services:
     volumes:
       - ../../../monitoring-mixins/loki-mixin/deploy/rules.yaml:/loki-mixin/rules.yaml
       - ../../../monitoring-mixins/loki-mixin/deploy/alerts.yaml:/loki-mixin/alerts.yaml
-    environment:
-      - MIMIR_ADDRESS=http://mimir:8080
-      - MIMIR_TENANT_ID=anonymous
-    command: >-
-      rules load /loki-mixin/rules.yaml /loki-mixin/alerts.yaml
-  
-  load-tempo-rules:
-    depends_on:
-      tempo:
-        condition: service_healthy
-    image: grafana/mimirtool:2.10.3
-    volumes:
       - ../../../monitoring-mixins/tempo-mixin/deploy/rules.yaml:/tempo-mixin/rules.yaml
       - ../../../monitoring-mixins/tempo-mixin/deploy/alerts.yaml:/tempo-mixin/alerts.yaml
-    environment:
-      - MIMIR_ADDRESS=http://mimir:8080
-      - MIMIR_TENANT_ID=anonymous
-    command: >-
-      rules load /tempo-mixin/rules.yaml /tempo-mixin/alerts.yaml
-      
-  load-mimir-rules:
-    depends_on:
-      mimir:
-        condition: service_healthy
-    image: grafana/mimirtool:2.10.3
-    volumes:
       - ../../../monitoring-mixins/mimir-mixin/deploy/rules.yaml:/mimir-mixin/rules.yaml
       - ../../../monitoring-mixins/mimir-mixin/deploy/alerts.yaml:/mimir-mixin/alerts.yaml
+
     environment:
       - MIMIR_ADDRESS=http://mimir:8080
       - MIMIR_TENANT_ID=anonymous
     command: >-
-      rules load /mimir-mixin/rules.yaml /mimir-mixin/alerts.yaml
+      rules load /loki-mixin/rules.yaml /loki-mixin/alerts.yaml /tempo-mixin/rules.yaml /tempo-mixin/alerts.yaml /mimir-mixin/rules.yaml /mimir-mixin/alerts.yaml
 
-  grafana: #Pyro-Profiles
-    image: grafana/grafana:10.2.0
-    hostname: grafana
-    command:
-      - --config=/etc/grafana-config/grafana.ini
-    volumes:
-      - ../../common/config/grafana/grafana.ini:/etc/grafana-config/grafana.ini
-      - ../../common/config/grafana/dashboards:/var/lib/grafana/dashboards
-      - ../../common/config/grafana/provisioning:/etc/grafana/provisioning
-      - ../../common/config/pyroscope/datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml # load datasources
-    environment:
-      - GF_LOG_LEVEL=error
-      - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD:-admin_password}
-      - GF_FEATURE_TOGGLES_ENABLE=flameGraph
-      - GF_DIAGNOSTICS_PROFILING_ENABLED=true
-      - GF_DIAGNOSTICS_PROFILING_ADDR=0.0.0.0
-      - GF_DIAGNOSTICS_PROFILING_PORT=6060
-      # - GF_INSTALL_PLUGINS=pyroscope-datasource,pyroscope-panel
-    ports:
-      - "3000:3000"
-      
   grafana: #From AIO
-    image: grafana/grafana:10.2.0
+    image: grafana/grafana-dev:10.3.0-144189
     command:
       - --config=/etc/grafana-config/grafana.ini
     volumes:
       - ../../common/config/grafana/grafana.ini:/etc/grafana-config/grafana.ini
       - ../../common/config/grafana/dashboards:/var/lib/grafana/dashboards
       - ../../common/config/grafana/provisioning:/etc/grafana/provisioning
-      - ./config/grafana/datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
+      - ./config/grafana/datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml #need to make sure this is correct, reference grafana git not the AIO
       - ../../../monitoring-mixins/mimir-mixin/deploy/dashboards_out:/var/lib/grafana/dashboards/mimir-mixin  # load mimir dashboards
       - ../../../monitoring-mixins/loki-mixin/deploy/dashboards_out:/var/lib/grafana/dashboards/loki-mixin    # load loki dashboards
       - ../../../monitoring-mixins/tempo-mixin/deploy/dashboards_out:/var/lib/grafana/dashboards/tempo-mixin  # load tempo dashboards
     environment:
       - GF_LOG_LEVEL=error
       - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD:-admin_password}
-      - GF_FEATURE_TOGGLES_ENABLE=traceqlEditor,pyroscopeFlameGraph
+      - GF_FEATURE_TOGGLES_ENABLE=traceToProfiles,traceqlEditor,pyroscopeFlameGraph #should this be just flamegraph?
       - GF_DIAGNOSTICS_PROFILING_ENABLED=true
       - GF_DIAGNOSTICS_PROFILING_ADDR=0.0.0.0
       - GF_DIAGNOSTICS_PROFILING_PORT=6060
       - GF_TRACING_OPENTELEMETRY_OTLP_ADDRESS=agent:4317
       - GF_TRACING_OPENTELEMETRY_CUSTOM_ATTRIBUTES=cluster:docker-compose,namespace:monitoring
-      # - GF_INSTALL_PLUGINS=pyroscope-datasource,pyroscope-panel
+      - GF_INSTALL_PLUGINS=pyroscope-panel
     ports:
       - "3000:3000"      
