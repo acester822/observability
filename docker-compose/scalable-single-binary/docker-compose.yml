@@ -1,0 +1,334 @@
+version: '3.9'
+
+
+  - path: ../../common/compose-include/agent-collect-traces.yaml #Tempo-Traces
+  - path: ../../common/compose-include/minio.yaml
+  - path: ../../common/compose-include/agent-collect-logs.yaml #Loki-Logs
+  - path: ../../common/compose-include/agent-collect-metrics.yaml #Mimir-Metrics
+  
+  # Note: 
+# include is available in Docker Compose version 2.20 and later, and Docker Desktop version 4.22 and later.
+include:
+  - path: ../../common/compose-include/minio.yaml
+  - path: ../../common/compose-include/agent-collect-profiles.yaml
+  # # for git remote  
+  # #   https://github.com/docker/compose/pull/10811
+  # #   https://docs.docker.com/engine/reference/commandline/build/#git-repositories
+  # # - git@github.com:ndeloof/test.git
+  # - https://github.com/qclaogui/codelab-monitoring.git#main:docker-compose/common/compose-include/minio.yaml
+  # - https://github.com/qclaogui/codelab-monitoring.git#main:docker-compose/common/compose-include/agent-collect-profiles.yaml
+  
+
+services:
+  gateway: #Mimir-Metrics
+    depends_on:
+      mimir:
+        condition: service_healthy
+    image: nginxinc/nginx-unprivileged:1.25-alpine
+    volumes:
+      - ../../common/config/nginx:/etc/nginx/templates
+      - ../../common/config/mimir/gateway_mimir.conf.template:/etc/nginx/templates/gateway_mimir.conf.template
+    environment:
+      - NGINX_ENVSUBST_OUTPUT_DIR=/etc/nginx
+      # nginx envsubst does not support default values like Docker Compose do when using ${MY_VAR:-My Default}.
+      # so need a full setup of all variables.
+      # https://github.com/nginxinc/docker-nginx/issues/592
+      # https://stackoverflow.com/a/65529290
+      - DISTRIBUTOR_HOST=mimir
+      - ALERT_MANAGER_HOST=mimir
+      - RULER_HOST=mimir
+      - QUERY_FRONTEND_HOST=mimir
+      - COMPACTOR_HOST=mimir
+    healthcheck:
+      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/ || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "8080"
+
+  mimir: #Mimir-Metrics
+    depends_on:
+      minio:
+        condition: service_healthy
+    image: grafana/mimir:2.10.3
+    command:
+      - -config.file=/etc/mimir.yaml
+      - -target=all
+      - -log.level=error
+    volumes:
+      - ../../common/config/mimir/monolithic-mode-metrics.yaml:/etc/mimir.yaml # Note: Mimir use monolithic-mode.yaml
+    ports:
+      - "8080"
+    healthcheck:
+      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/ready || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    # Horizontally scale up support(Monolithic mode)
+    # https://grafana.com/docs/mimir/latest/references/architecture/deployment-modes/#monolithic-mode
+    deploy:
+      replicas: 2
+    networks:
+      default:
+        aliases:
+          - mimir-memberlist
+
+  grafana: #Mimir-Metrics
+    image: grafana/grafana:10.2.0
+    command:
+      - --config=/etc/grafana-config/grafana.ini
+    volumes:
+      - ../../common/config/grafana/grafana.ini:/etc/grafana-config/grafana.ini
+      - ../../common/config/grafana/dashboards:/var/lib/grafana/dashboards
+      - ../../common/config/grafana/provisioning:/etc/grafana/provisioning
+      - ../../common/config/mimir/datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml    # load datasources
+      - ../../../monitoring-mixins/mimir-mixin/deploy/dashboards_out:/var/lib/grafana/dashboards/mimir-mixin # load dashboards
+    environment:
+      - GF_LOG_LEVEL=error
+      - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD:-admin_password}
+    ports:
+      - "3000:3000"
+
+  gateway: #Tempo-Traces
+    depends_on:
+      tempo:
+        condition: service_healthy
+    image: nginxinc/nginx-unprivileged:1.25-alpine
+    restart: always
+    volumes:
+      - ../../common/config/nginx:/etc/nginx/templates
+      - ../../common/config/tempo/gateway_tempo.conf.template:/etc/nginx/templates/gateway_tempo.conf.template
+    environment:
+      - NGINX_ENVSUBST_OUTPUT_DIR=/etc/nginx
+      - DISTRIBUTOR_HOST=tempo
+      - INGESTER_HOST=tempo
+      - QUERY_FRONTEND_HOST=tempo
+      - COMPACTOR_HOST=tempo
+    healthcheck:
+      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3200/ || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "3200"
+      - "4317"
+
+  tempo: #Tempo-Traces
+    depends_on:
+      minio:
+        condition: service_healthy
+    image: &tempoImage grafana/tempo:2.2.3
+    restart: always
+    volumes:
+      - ./config/tempo/scalable-single-binary.yaml:/etc/tempo.yaml # Note: Tempo use scalable-single-binary.yaml
+    command:
+      - -config.file=/etc/tempo.yaml
+      - -target=scalable-single-binary
+      - -log.level=error
+    healthcheck:
+      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3200/ready || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "3200"
+    # Horizontally scale up support(Monolithic mode)
+    # https://grafana.com/docs/tempo/latest/setup/deployment/#scaling-monolithic-mode
+    deploy:
+      replicas: 2
+    networks:
+      default:
+        aliases:
+          - tempo-memberlist
+
+  grafana: #Tempo-Traces
+    depends_on:
+      minio:
+        condition: service_started
+    image: grafana/grafana:10.2.0
+    command:
+      - --config=/etc/grafana-config/grafana.ini
+    volumes:
+      - ../../common/config/grafana/grafana.ini:/etc/grafana-config/grafana.ini
+      - ../../common/config/grafana/dashboards:/var/lib/grafana/dashboards
+      - ../../common/config/grafana/provisioning:/etc/grafana/provisioning
+      - ../../common/config/tempo/datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml # load datasources
+    environment:
+      - GF_LOG_LEVEL=error
+      - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD:-admin_password}
+      - GF_FEATURE_TOGGLES_ENABLE=traceqlEditor
+      # - GF_TRACING_OPENTELEMETRY_OTLP_ADDRESS=agent:4317
+      # - GF_TRACING_OPENTELEMETRY_CUSTOM_ATTRIBUTES=cluster:docker-compose,namespace:monitoring
+    ports:
+      - "3000:3000"
+
+  gateway: #Loki-Logs
+    depends_on:
+      loki:
+        condition: service_healthy
+    image: nginxinc/nginx-unprivileged:1.25-alpine
+    volumes:
+      - ../../common/config/nginx:/etc/nginx/templates
+      - ../../common/config/loki/gateway_loki.conf.template:/etc/nginx/templates/gateway_loki.conf.template
+    environment:
+      - NGINX_ENVSUBST_OUTPUT_DIR=/etc/nginx
+      - DISTRIBUTOR_HOST=loki
+      - INGESTER_HOST=loki
+      - RULER_HOST=loki
+      - QUERY_FRONTEND_HOST=loki
+      - QUERY_SCHEDULER_HOST=loki
+      - QUERIER_HOST=loki
+      - COMPACTOR_HOST=loki
+    healthcheck:
+      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3100/ || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "3100"
+
+  loki: #Loki-Logs
+    depends_on:
+      minio:
+        condition: service_healthy
+    image: &lokiImage grafana/loki:2.9.2
+    command:
+      - -config.file=/etc/loki.yaml
+      - -target=all
+      - -log.level=error
+    volumes:
+      - ../../common/config/loki/monolithic-mode-logs.yaml:/etc/loki.yaml
+    ports:
+      - "3100"
+    healthcheck:
+      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3100/ready || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    # Horizontally scale up support(Monolithic mode)
+    # https://grafana.com/docs/loki/latest/fundamentals/architecture/deployment-modes/#simple-scalable-deployment-mode
+    deploy:
+      replicas: 3
+    networks:
+      default:
+        aliases:
+          - loki-memberlist
+
+  grafana: #Loki-Logs
+    image: grafana/grafana:10.2.0
+    command:
+      - --config=/etc/grafana-config/grafana.ini
+    volumes:
+      - ../../common/config/grafana/grafana.ini:/etc/grafana-config/grafana.ini
+      - ../../common/config/grafana/dashboards:/var/lib/grafana/dashboards
+      - ../../common/config/grafana/provisioning:/etc/grafana/provisioning
+      - ../../common/config/loki/datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml # load datasources
+    environment:
+      - GF_LOG_LEVEL=warn
+      - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD:-admin_password}
+    ports:
+      - "3000:3000"
+
+  pyroscope: #Pyro-Profiles
+    image: grafana/pyroscope:1.1.5
+    volumes:
+      - ../../common/config/pyroscope/monolithic-mode-profiles.yaml:/etc/config.yaml
+    command:
+      - -config.file=/etc/config.yaml
+      - -target=all
+      - -log.level=warn
+    # ports:
+    #   - "4040:4040"
+    networks:
+      default:
+        aliases:
+          - gateway
+
+  load-loki-rules:
+    depends_on:
+      loki:
+        condition: service_healthy
+    image: grafana/mimirtool:2.10.3
+    volumes:
+      - ../../../monitoring-mixins/loki-mixin/deploy/rules.yaml:/loki-mixin/rules.yaml
+      - ../../../monitoring-mixins/loki-mixin/deploy/alerts.yaml:/loki-mixin/alerts.yaml
+    environment:
+      - MIMIR_ADDRESS=http://mimir:8080
+      - MIMIR_TENANT_ID=anonymous
+    command: >-
+      rules load /loki-mixin/rules.yaml /loki-mixin/alerts.yaml
+  
+  load-tempo-rules:
+    depends_on:
+      tempo:
+        condition: service_healthy
+    image: grafana/mimirtool:2.10.3
+    volumes:
+      - ../../../monitoring-mixins/tempo-mixin/deploy/rules.yaml:/tempo-mixin/rules.yaml
+      - ../../../monitoring-mixins/tempo-mixin/deploy/alerts.yaml:/tempo-mixin/alerts.yaml
+    environment:
+      - MIMIR_ADDRESS=http://mimir:8080
+      - MIMIR_TENANT_ID=anonymous
+    command: >-
+      rules load /tempo-mixin/rules.yaml /tempo-mixin/alerts.yaml
+      
+  load-mimir-rules:
+    depends_on:
+      mimir:
+        condition: service_healthy
+    image: grafana/mimirtool:2.10.3
+    volumes:
+      - ../../../monitoring-mixins/mimir-mixin/deploy/rules.yaml:/mimir-mixin/rules.yaml
+      - ../../../monitoring-mixins/mimir-mixin/deploy/alerts.yaml:/mimir-mixin/alerts.yaml
+    environment:
+      - MIMIR_ADDRESS=http://mimir:8080
+      - MIMIR_TENANT_ID=anonymous
+    command: >-
+      rules load /mimir-mixin/rules.yaml /mimir-mixin/alerts.yaml
+
+  grafana: #Pyro-Profiles
+    image: grafana/grafana:10.2.0
+    hostname: grafana
+    command:
+      - --config=/etc/grafana-config/grafana.ini
+    volumes:
+      - ../../common/config/grafana/grafana.ini:/etc/grafana-config/grafana.ini
+      - ../../common/config/grafana/dashboards:/var/lib/grafana/dashboards
+      - ../../common/config/grafana/provisioning:/etc/grafana/provisioning
+      - ../../common/config/pyroscope/datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml # load datasources
+    environment:
+      - GF_LOG_LEVEL=error
+      - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD:-admin_password}
+      - GF_FEATURE_TOGGLES_ENABLE=flameGraph
+      - GF_DIAGNOSTICS_PROFILING_ENABLED=true
+      - GF_DIAGNOSTICS_PROFILING_ADDR=0.0.0.0
+      - GF_DIAGNOSTICS_PROFILING_PORT=6060
+      # - GF_INSTALL_PLUGINS=pyroscope-datasource,pyroscope-panel
+    ports:
+      - "3000:3000"
+      
+  grafana: #From AIO
+    image: grafana/grafana:10.2.0
+    command:
+      - --config=/etc/grafana-config/grafana.ini
+    volumes:
+      - ../../common/config/grafana/grafana.ini:/etc/grafana-config/grafana.ini
+      - ../../common/config/grafana/dashboards:/var/lib/grafana/dashboards
+      - ../../common/config/grafana/provisioning:/etc/grafana/provisioning
+      - ./config/grafana/datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
+      - ../../../monitoring-mixins/mimir-mixin/deploy/dashboards_out:/var/lib/grafana/dashboards/mimir-mixin  # load mimir dashboards
+      - ../../../monitoring-mixins/loki-mixin/deploy/dashboards_out:/var/lib/grafana/dashboards/loki-mixin    # load loki dashboards
+      - ../../../monitoring-mixins/tempo-mixin/deploy/dashboards_out:/var/lib/grafana/dashboards/tempo-mixin  # load tempo dashboards
+    environment:
+      - GF_LOG_LEVEL=error
+      - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD:-admin_password}
+      - GF_FEATURE_TOGGLES_ENABLE=traceqlEditor,pyroscopeFlameGraph
+      - GF_DIAGNOSTICS_PROFILING_ENABLED=true
+      - GF_DIAGNOSTICS_PROFILING_ADDR=0.0.0.0
+      - GF_DIAGNOSTICS_PROFILING_PORT=6060
+      - GF_TRACING_OPENTELEMETRY_OTLP_ADDRESS=agent:4317
+      - GF_TRACING_OPENTELEMETRY_CUSTOM_ATTRIBUTES=cluster:docker-compose,namespace:monitoring
+      # - GF_INSTALL_PLUGINS=pyroscope-datasource,pyroscope-panel
+    ports:
+      - "3000:3000"      
