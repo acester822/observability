@@ -19,7 +19,7 @@ argument "metrics_endpoint" {
 
 argument "logs_endpoint" {
 	optional = true
-	default  = "http://loki-write:3100"
+	default  = "http://gateway:3100"
 	//comment = "Where to send collected logs."
 }
 
@@ -31,7 +31,7 @@ argument "traces_endpoint" {
 
 argument "profiles_endpoint" {
 	optional = true
-	default  = "http://gateway:4040"
+	default  = "http://pyroscope:4040"
 	//comment  = "Where to send collected profiles."
 }
 
