@@ -11,9 +11,6 @@ version: '3.9'
 services:
 
   agent: # All
-    depends_on:
-      gateway:
-        condition: service_healthy
     image: grafana/agent:v0.37.2
     volumes:
       - ../xporters/agent-flow:/etc/agent-config
@@ -63,9 +60,6 @@ services:
       #- "14268"
 
   gateway: #All
-    depends_on:
-      mimir:
-        condition: service_healthy
     image: nginxinc/nginx-unprivileged:1.25-alpine
     volumes:
       - ../configs/nginx:/etc/nginx/templates
@@ -108,8 +102,6 @@ services:
 
   mimir: #Mimir-Metrics
     depends_on:
-      minio:
-        condition: service_healthy
     image: grafana/mimir:2.10.3
     command:
       - -config.file=/etc/mimir.yaml
@@ -134,9 +126,6 @@ services:
           - mimir-memberlist
 
   loki: #Loki-Logs
-    depends_on:
-      minio:
-        condition: service_healthy
     image: &lokiImage grafana/loki:2.9.2
     command:
       - -config.file=/etc/loki.yaml
@@ -161,9 +150,6 @@ services:
           - loki-memberlist
 
   tempo: #Tempo-Traces
-    depends_on:
-      minio:
-        condition: service_healthy
     image: &tempoImage grafana/tempo:2.2.3
     restart: always
     volumes:
@@ -232,9 +218,6 @@ services:
       - "9001:9001"
 
   load-rules-all:
-    depends_on:
-      loki:
-        condition: service_healthy
     image: grafana/mimirtool:2.10.3
     volumes:
       - ..//monitoring-mixins/loki-mixin/deploy/rules.yaml:/loki-mixin/rules.yaml
