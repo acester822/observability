@@ -215,8 +215,8 @@ services:
         mkdir -p /data/pyroscope-data && \
         minio server /data --console-address ':9001'
     environment:
-      - MINIO_ROOT_USER=acester822
-      - MINIO_ROOT_PASSWORD=228retseca
+      - MINIO_ROOT_USER=admin
+      - MINIO_ROOT_PASSWORD=admin_password
       - MINIO_PROMETHEUS_AUTH_TYPE=public
       - MINIO_UPDATE=off
       # - MINIO_PROMETHEUS_URL="http://gateway:8500/prometheus"
