@@ -49,7 +49,7 @@ datasources:
   access: proxy
   orgId: 1
   uid: profiles
-  url: http://gateway:4040
+  url: http://pyroscope:4040
   basicAuth: false
   isDefault: false # Note: default datasources
   version: 1
