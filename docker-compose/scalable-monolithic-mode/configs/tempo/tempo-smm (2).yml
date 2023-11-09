@@ -1,0 +1,45 @@
+server:
+  http_listen_port: 3200
+
+distributor:
+  receivers:                           # this configuration will listen on all ports and protocols that tempo is capable of.
+    jaeger:                            # the receives all come from the OpenTelemetry collector.  more configuration information can
+      protocols:                       # be found there: https://github.com/open-telemetry/opentelemetry-collector/tree/main/receiver
+        thrift_http:                   #
+        grpc:                          # for a production deployment you should only enable the receivers you need!
+        thrift_binary:
+        thrift_compact:
+    zipkin:
+    otlp:
+      protocols:
+        http:
+        grpc:
+    opencensus:
+
+memberlist:
+  join_members: [ tempo-memberlist:7946 ]
+  
+compactor:
+  ring:
+    kvstore:
+      store: memberlist
+      
+querier:
+  frontend_worker:
+    frontend_address: query-frontend:9095
+
+storage:
+  trace:
+    backend: s3
+    wal:
+      path: /tmp/tempo/wal
+    s3:
+      bucket: tempo
+      endpoint: minio:9000
+      access_key: acester822
+      secret_key: 228retseca
+      insecure: true
+
+querier:
+  frontend_worker:
+    frontend_address: tempo:9095
