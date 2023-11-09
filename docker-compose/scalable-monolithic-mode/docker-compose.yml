@@ -91,7 +91,7 @@ services:
       timeout: 5s
       retries: 5
     ports:
-      - "8080:8080"    # Mimir
+      - "8082:8080"    # Mimir
       - "3100:3100"    # Mimir
       - "14268:14268"  # Jaeger Ingest
       - "3200:3200"    # Tempo
