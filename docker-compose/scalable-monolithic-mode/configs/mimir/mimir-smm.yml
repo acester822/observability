@@ -24,6 +24,7 @@ alertmanager:
   enable_api: true
   external_url: /alertmanager
   fallback_config_file: /etc/mimir/alertmanager-fallback-config.yaml
+  
 alertmanager_storage:
   s3:
     bucket_name: mimir-alertmanager
@@ -37,6 +38,7 @@ blocks_storage:
 frontend:
   parallelize_shardable_queries: true
   scheduler_address: query-scheduler:9095
+
 frontend_worker:
   grpc_client_config:
     max_send_msg_size: 419430400

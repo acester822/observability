@@ -7,9 +7,14 @@ datasources:
   uid: metrics
   access: proxy
   orgId: 1
-  url: http://mimir-write:8500/prometheus
+  url: http://gateway:8080/prometheus
   basicAuth: false
   isDefault: true # Note: default datasources
+  jsonData:
+    prometheusType: Mimir
+    exemplarTraceIdDestinations:
+    - name: traceID
+      datasourceUid: jaeger
   version: 1
   editable: true
 
@@ -49,3 +54,10 @@ datasources:
   isDefault: false # Note: default datasources
   version: 1
   editable: true
+  
+- name: Jaeger
+  type: jaeger
+  access: proxy
+  uid: jaeger
+  orgID: 1
+  url: http://jaeger:16686/
