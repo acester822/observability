@@ -72,22 +72,22 @@ services:
       # so need a full setup of all variables.
       # https://github.com/nginxinc/docker-nginx/issues/592
       # https://stackoverflow.com/a/65529290
-      - DISTRIBUTOR_HOST=mimir-memberlist
-      - QUERY_FRONTEND_HOST=mimir-memberlist
-      - ALERT_MANAGER_HOST=mimir-memberlist
-      - RULER_HOST=mimir-memberlist
-      - COMPACTOR_HOST=mimir-memberlist
-      - LOKI_DISTRIBUTOR_HOST=loki-memberlist
-      - LOKI_INGESTER_HOST=loki-memberlist
-      - LOKI_RULER_HOST=loki-memberlist
-      - LOKI_QUERY_FRONTEND_HOST=loki-memberlist
-      - LOKI_QUERY_SCHEDULER_HOST=loki-memberlist
-      - LOKI_QUERIER_HOST=loki-memberlist
-      - LOKI_COMPACTOR_HOST=loki-memberlist
-      - TEMPO_DISTRIBUTOR_HOST=tempo-memberlist
-      - TEMPO_INGESTER_HOST=tempo-memberlist
-      - TEMPO_QUERY_FRONTEND_HOST=tempo-memberlist
-      - TEMPO_COMPACTOR_HOST=tempo-memberlist
+      - DISTRIBUTOR_HOST=obs-mimir
+      - QUERY_FRONTEND_HOST=obs-mimir
+      - ALERT_MANAGER_HOST=obs-mimir
+      - RULER_HOST=obs-mimir
+      - COMPACTOR_HOST=obs-mimir
+      - LOKI_DISTRIBUTOR_HOST=obs-loki
+      - LOKI_INGESTER_HOST=obs-loki
+      - LOKI_RULER_HOST=obs-loki
+      - LOKI_QUERY_FRONTEND_HOST=obs-loki
+      - LOKI_QUERY_SCHEDULER_HOST=obs-loki
+      - LOKI_QUERIER_HOST=obs-loki
+      - LOKI_COMPACTOR_HOST=obs-loki
+      - TEMPO_DISTRIBUTOR_HOST=obs-tempo
+      - TEMPO_INGESTER_HOST=obs-tempo
+      - TEMPO_QUERY_FRONTEND_HOST=obs-tempo
+      - TEMPO_COMPACTOR_HOST=obs-tempo
     healthcheck:
       test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/ || exit 1" ]
       interval: 10s
@@ -218,10 +218,7 @@ services:
     volumes:
       - ./Data:/data:delegated
     healthcheck:
-      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:9000/ready || exit 1" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      disable: true
     ports:
       - "9001:9001"
 
