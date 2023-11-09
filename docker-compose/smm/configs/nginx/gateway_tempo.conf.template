@@ -1,14 +1,4 @@
 server {
-    listen 4317;
-    http2 on;
-
-    location / {
-      grpc_set_header X-Scope-OrgID $ensured_x_scope_orgid;
-      grpc_pass grpc://otlp;
-    }
-}
-
-server {
     listen 3200;
     listen [::]:3200;
 

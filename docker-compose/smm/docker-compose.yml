@@ -59,7 +59,7 @@ services:
     container_name: jaeger
     ports:
       - 16686:16686
-      #- "14268"
+      - "14268"
 
   gateway: #All
     image: nginxinc/nginx-unprivileged:1.25-alpine
@@ -96,7 +96,6 @@ services:
     ports:
       - "8082:8080"    # Mimir
       - "3100:3100"    # Mimir
-      - "14268:14268"  # Jaeger Ingest
       - "3200:3200"    # Tempo
       - "9095:9095"    # Tempo GPRC
       - "4317:4317"    # Otlp GPRC
