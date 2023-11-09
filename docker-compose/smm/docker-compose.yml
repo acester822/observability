@@ -103,11 +103,11 @@ services:
   mimir: #Mimir-Metrics
     image: grafana/mimir:2.10.3
     command:
-      - -config.file=/etc/mimir-smm.yml
+      - -config.file=/etc/mimir/mimir-smm.yml
       - -target=all
       - -log.level=error
     volumes:
-      - ../smm/configs/mimir/:/etc
+      - ../smm/configs/mimir/:/etc/mimir
      # ports:
      # - "8080"
     healthcheck:
@@ -238,9 +238,9 @@ services:
       - --config=/etc/grafana-config/grafana.ini
     volumes:
       - ../smm/configs/grafana/grafana.ini:/etc/grafana-config/grafana.ini
-      - ../smm/config/grafana/dashboards:/var/lib/grafana/dashboards
-      - ../smm/config/grafana/provisioning:/etc/grafana/provisioning
-      - ../smm/config/grafana/datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml #need to make sure this is correct, reference grafana git not the AIO
+      - ../smm/configs/grafana/dashboards:/var/lib/grafana/dashboards
+      - ../smm/configs/grafana/provisioning:/etc/grafana/provisioning
+      - ../smm/configs/grafana/datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml #need to make sure this is correct, reference grafana git not the AIO
       - ../smm/monitoring-mixins/mimir-mixin/deploy/dashboards_out:/var/lib/grafana/dashboards/mimir-mixin  # load mimir dashboards
       - ../smm/monitoring-mixins/loki-mixin/deploy/dashboards_out:/var/lib/grafana/dashboards/loki-mixin    # load loki dashboards
       - ../smm/monitoring-mixins/tempo-mixin/deploy/dashboards_out:/var/lib/grafana/dashboards/tempo-mixin  # load tempo dashboards
