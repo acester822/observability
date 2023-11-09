@@ -1,6 +1,3 @@
-upstream otlp {
-    server ${TEMPO_DISTRIBUTOR_HOST}:4317;
-}
 server {
     listen 4317;
     http2 on;
