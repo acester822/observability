@@ -101,7 +101,6 @@ services:
       - "9411:9411"    # Zipkin
 
   mimir: #Mimir-Metrics
-    depends_on:
     image: grafana/mimir:2.10.3
     command:
       - -config.file=/etc/mimir.yaml
