@@ -103,7 +103,7 @@ services:
   mimir: #Mimir-Metrics
     image: grafana/mimir:2.10.3
     command:
-      - -config.file=/etc/mimir.yaml
+      - -config.file=/etc/mimir-smm.yml
       - -target=all
       - -log.level=error
     volumes:
