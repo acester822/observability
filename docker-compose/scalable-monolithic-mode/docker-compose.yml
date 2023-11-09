@@ -48,19 +48,19 @@ services:
     volumes:
       - ./config/otel-collector-otlp-push-config.yaml:/etc/otelcol-contrib/config.yaml
     ports: # From https://opentelemetry.io/docs/collector/getting-started/
-      - 1888:1888 # pprof extension
-      - 8888:8888 # Prometheus metrics exposed by the collector
-      - 8889:8889 # Prometheus exporter metrics
-      - 13133:13133 # health_check extension
-      - 4317:4317 # OTLP gRPC receiver
-      - 4318:4318 # OTLP http receiver
-      - 55679:55679 # zpages extension
+     # - 1888:1888 # pprof extension
+     # - 8888:8888 # Prometheus metrics exposed by the collector
+     # - 8889:8889 # Prometheus exporter metrics
+     # - 13133:13133 # health_check extension
+     # - 4317:4317 # OTLP gRPC receiver
+     # - 4318:4318 # OTLP http receiver
+     # - 55679:55679 # zpages extension
 
   jaeger:
     image: jaegertracing/all-in-one
     ports:
       - 16686:16686
-      - "14268"
+      #- "14268"
 
   gateway: #All
     depends_on:
@@ -118,7 +118,7 @@ services:
     volumes:
       - ../../common/config/mimir/monolithic-mode-metrics.yaml:/etc/mimir.yaml # Note: Mimir use monolithic-mode.yaml
     ports:
-      - "8080"
+     # - "8080"
     healthcheck:
       test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/ready || exit 1" ]
       interval: 10s
@@ -145,7 +145,7 @@ services:
     volumes:
       - ../../common/config/loki/monolithic-mode-logs.yaml:/etc/loki.yaml
     ports:
-      - "3100"
+     # - "3100"
     healthcheck:
       test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3100/ready || exit 1" ]
       interval: 10s
@@ -178,9 +178,9 @@ services:
       timeout: 5s
       retries: 5
     ports:
-      - "3200"
-    # Horizontally scale up support(Monolithic mode)
-    # https://grafana.com/docs/tempo/latest/setup/deployment/#scaling-monolithic-mode
+     # - "3200"
+     # Horizontally scale up support(Monolithic mode)
+     # https://grafana.com/docs/tempo/latest/setup/deployment/#scaling-monolithic-mode
     deploy:
       replicas: 1
     networks:
@@ -201,7 +201,7 @@ services:
     networks:
       default:
         aliases:
-          - gateway
+          - pyroscope
 
   minio: # All
     image: minio/minio:RELEASE.2023-11-01T01-57-10Z
@@ -215,8 +215,8 @@ services:
         mkdir -p /data/pyroscope-data && \
         minio server /data --console-address ':9001'
     environment:
-      - MINIO_ROOT_USER=admin
-      - MINIO_ROOT_PASSWORD=admin_password
+      - MINIO_ROOT_USER=acester822
+      - MINIO_ROOT_PASSWORD=228retseca
       - MINIO_PROMETHEUS_AUTH_TYPE=public
       - MINIO_UPDATE=off
       # - MINIO_PROMETHEUS_URL="http://gateway:8500/prometheus"

@@ -1,5 +1,12 @@
 receivers:
 
+  otlp:
+    protocols:
+      grpc:
+        endpoint: grafana-agent-cluster
+      http:
+        endpoint: grafana-agent-cluster
+
   docker_stats:
     metrics:
       container.cpu.usage.total:
