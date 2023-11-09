@@ -23,7 +23,7 @@ alertmanager:
   data_dir: /data/alertmanager
   enable_api: true
   external_url: /alertmanager
-  fallback_config_file: /etc/mimir/alertmanager-fallback-config.yaml
+  fallback_config_file: /etc/mimir/alertmanager-fallback.yml
   
 alertmanager_storage:
   s3:
@@ -56,7 +56,7 @@ ruler_storage:
     bucket_name: mimir-rules
 
 runtime_config:
-  file: /etc/mimir/runtime.yaml
+  file: /etc/mimir/runtime.yml
 
 query_scheduler:
   max_outstanding_requests_per_tenant: 800
