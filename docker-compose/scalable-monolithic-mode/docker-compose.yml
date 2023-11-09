@@ -222,7 +222,7 @@ services:
       # - MINIO_PROMETHEUS_URL="http://gateway:8500/prometheus"
       # - MINIO_PROMETHEUS_JOB_ID="integrations/minio"
     volumes:
-      - ../Data:/data:delegated
+      - ./Data:/data:delegated
     healthcheck:
       test: ["CMD", "curl","-f","http://localhost:9000/minio/health/live"]
       interval: 10s
