@@ -16,7 +16,7 @@ services:
         condition: service_healthy
     image: grafana/agent:v0.37.2
     volumes:
-      - ../exporters/grafana-agent/agent-flow:/etc/agent-config
+      - ../xporters/agent-flow:/etc/agent-config
       - /var/run/docker.sock:/var/run/docker.sock
     entrypoint:
       - /bin/grafana-agent
@@ -46,7 +46,7 @@ services:
     profiles:
       - otel-collector-otlp-push
     volumes:
-      - ./config/otel-collector-otlp-push-config.yaml:/etc/otelcol-contrib/config.yaml
+      - ../xporters/otel/config.yaml:/etc/otelcol-contrib/config.yaml
     ports: # From https://opentelemetry.io/docs/collector/getting-started/
      # - 1888:1888 # pprof extension
      # - 8888:8888 # Prometheus metrics exposed by the collector
@@ -68,7 +68,7 @@ services:
         condition: service_healthy
     image: nginxinc/nginx-unprivileged:1.25-alpine
     volumes:
-      - ../../common/config/nginx:/etc/nginx/templates
+      - ../configs/nginx:/etc/nginx/templates
     environment:
       - NGINX_ENVSUBST_OUTPUT_DIR=/etc/nginx
       # nginx envsubst does not support default values like Docker Compose do when using ${MY_VAR:-My Default}.
@@ -116,7 +116,7 @@ services:
       - -target=all
       - -log.level=error
     volumes:
-      - ../../common/config/mimir/monolithic-mode-metrics.yaml:/etc/mimir.yaml # Note: Mimir use monolithic-mode.yaml
+      - ../configs/mimir/:/etc
     ports:
      # - "8080"
     healthcheck:
@@ -143,7 +143,7 @@ services:
       - -target=all
       - -log.level=error
     volumes:
-      - ../../common/config/loki/monolithic-mode-logs.yaml:/etc/loki.yaml
+      - ../configs/loki/loki-smm.yml:/etc/loki.yaml
     ports:
      # - "3100"
     healthcheck:
@@ -167,7 +167,7 @@ services:
     image: &tempoImage grafana/tempo:2.2.3
     restart: always
     volumes:
-      - ./config/tempo/scalable-single-binary.yaml:/etc/tempo.yaml # Note: Tempo use scalable-single-binary.yaml
+      - ../configs/tempo/tempo-smm.yml:/etc/tempo.yaml # Note: Tempo use scalable-single-binary.yaml
     command:
       - -config.file=/etc/tempo.yaml
       - -target=scalable-single-binary
@@ -191,7 +191,7 @@ services:
   pyroscope: #Pyro-Profiles
     image: grafana/pyroscope:1.1.5
     volumes:
-      - ../../common/config/pyroscope/monolithic-mode-profiles.yaml:/etc/config.yaml
+      - ../configs/pyro/pyro-smm.yml:/etc/config.yaml
     command:
       - -config.file=/etc/config.yaml
       - -target=all

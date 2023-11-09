@@ -71,7 +71,7 @@ exporters:
 #      insecure: true
 #   Data sources: traces, metrics
   otlphttp:
-    endpoint: http://mimir:4318/otlp
+    endpoint: http://gateway:4318/otlp
     tls:
       insecure: true
 
