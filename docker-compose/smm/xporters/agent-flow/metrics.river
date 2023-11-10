@@ -133,7 +133,7 @@ loki.process "containers" {
 	}
 
 	stage.tenant {
-		value = "acester822"
+		value = "anonymous"
 	}
 }
 
