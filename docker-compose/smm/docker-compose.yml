@@ -52,9 +52,9 @@ services:
       - otel-collector-otlp-push
     volumes:
       - ../smm/xporters/otel/config.yaml:/etc/otelcol-contrib/config.yaml
-     # ports: # From https://opentelemetry.io/docs/collector/getting-started/
+    ports: # From https://opentelemetry.io/docs/collector/getting-started/
      # - 1888:1888 # pprof extension
-     # - 8888:8888 # Prometheus metrics exposed by the collector
+      - "8888" # Prometheus metrics exposed by the collector
      # - 8889:8889 # Prometheus exporter metrics
      # - 13133:13133 # health_check extension
      # - 4317:4317 # OTLP gRPC receiver
@@ -79,22 +79,22 @@ services:
       # so need a full setup of all variables.
       # https://github.com/nginxinc/docker-nginx/issues/592
       # https://stackoverflow.com/a/65529290
-      - DISTRIBUTOR_HOST=smm-mimir
-      - QUERY_FRONTEND_HOST=smm-mimir
-      - ALERT_MANAGER_HOST=smm-mimir
-      - RULER_HOST=smm-mimir
-      - COMPACTOR_HOST=smm-mimir
-      - LOKI_DISTRIBUTOR_HOST=smm-loki
-      - LOKI_INGESTER_HOST=smm-loki
-      - LOKI_RULER_HOST=smm-loki
-      - LOKI_QUERY_FRONTEND_HOST=smm-loki
-      - LOKI_QUERY_SCHEDULER_HOST=smm-loki
-      - LOKI_QUERIER_HOST=smm-loki
-      - LOKI_COMPACTOR_HOST=smm-loki
-      - TEMPO_DISTRIBUTOR_HOST=smm-tempo
-      - TEMPO_INGESTER_HOST=smm-tempo
-      - TEMPO_QUERY_FRONTEND_HOST=smm-tempo
-      - TEMPO_COMPACTOR_HOST=smm-tempo
+      - DISTRIBUTOR_HOST=mimir
+      - QUERY_FRONTEND_HOST=mimir
+      - ALERT_MANAGER_HOST=mimir
+      - RULER_HOST=mimir
+      - COMPACTOR_HOST=mimir
+      - LOKI_DISTRIBUTOR_HOST=loki
+      - LOKI_INGESTER_HOST=loki
+      - LOKI_RULER_HOST=loki
+      - LOKI_QUERY_FRONTEND_HOST=loki
+      - LOKI_QUERY_SCHEDULER_HOST=loki
+      - LOKI_QUERIER_HOST=loki
+      - LOKI_COMPACTOR_HOST=loki
+      - TEMPO_DISTRIBUTOR_HOST=tempo
+      - TEMPO_INGESTER_HOST=tempo
+      - TEMPO_QUERY_FRONTEND_HOST=tempo
+      - TEMPO_COMPACTOR_HOST=tempo
     healthcheck:
       test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/ || exit 1" ]
       interval: 10s
