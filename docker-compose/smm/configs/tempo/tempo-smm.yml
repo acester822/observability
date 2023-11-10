@@ -34,7 +34,7 @@ storage:
     wal:
       path: /tmp/tempo/wal
     s3:
-      bucket: tempo
+      bucket: tempo-data
       endpoint: minio:9000
       access_key: acester822
       secret_key: 228retseca
