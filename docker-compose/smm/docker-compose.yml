@@ -72,22 +72,22 @@ services:
       # so need a full setup of all variables.
       # https://github.com/nginxinc/docker-nginx/issues/592
       # https://stackoverflow.com/a/65529290
-      - DISTRIBUTOR_HOST=obs-mimir
-      - QUERY_FRONTEND_HOST=obs-mimir
-      - ALERT_MANAGER_HOST=obs-mimir
-      - RULER_HOST=obs-mimir
-      - COMPACTOR_HOST=obs-mimir
-      - LOKI_DISTRIBUTOR_HOST=obs-loki
-      - LOKI_INGESTER_HOST=obs-loki
-      - LOKI_RULER_HOST=obs-loki
-      - LOKI_QUERY_FRONTEND_HOST=obs-loki
-      - LOKI_QUERY_SCHEDULER_HOST=obs-loki
-      - LOKI_QUERIER_HOST=obs-loki
-      - LOKI_COMPACTOR_HOST=obs-loki
-      - TEMPO_DISTRIBUTOR_HOST=obs-tempo
-      - TEMPO_INGESTER_HOST=obs-tempo
-      - TEMPO_QUERY_FRONTEND_HOST=obs-tempo
-      - TEMPO_COMPACTOR_HOST=obs-tempo
+      - DISTRIBUTOR_HOST=smm-mimir
+      - QUERY_FRONTEND_HOST=smm-mimir
+      - ALERT_MANAGER_HOST=smm-mimir
+      - RULER_HOST=smm-mimir
+      - COMPACTOR_HOST=smm-mimir
+      - LOKI_DISTRIBUTOR_HOST=smm-loki
+      - LOKI_INGESTER_HOST=smm-loki
+      - LOKI_RULER_HOST=smm-loki
+      - LOKI_QUERY_FRONTEND_HOST=smm-loki
+      - LOKI_QUERY_SCHEDULER_HOST=smm-loki
+      - LOKI_QUERIER_HOST=smm-loki
+      - LOKI_COMPACTOR_HOST=smm-loki
+      - TEMPO_DISTRIBUTOR_HOST=smm-tempo
+      - TEMPO_INGESTER_HOST=smm-tempo
+      - TEMPO_QUERY_FRONTEND_HOST=smm-tempo
+      - TEMPO_COMPACTOR_HOST=smm-tempo
     healthcheck:
       test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/ || exit 1" ]
       interval: 10s
