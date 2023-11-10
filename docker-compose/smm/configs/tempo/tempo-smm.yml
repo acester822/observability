@@ -39,7 +39,3 @@ storage:
       access_key: acester822
       secret_key: 228retseca
       insecure: true
-
-querier:
-  frontend_worker:
-    frontend_address: tempo:9095
