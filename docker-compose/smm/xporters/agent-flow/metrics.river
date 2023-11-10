@@ -133,7 +133,7 @@ loki.process "containers" {
 	}
 
 	stage.tenant {
-		value = "anonymous"
+		value = "acester822"
 	}
 }
 
@@ -142,12 +142,13 @@ loki.process "containers" {
  ********************************************/
 
 otelcol.receiver.otlp "containers" {
-	// https://grafana.com/docs/agent/latest/flow/reference/components/otelcol.receiver.otlp/
+	grpc {
+		endpoint = "0.0.0.0:4317"
+	}
 
-	// configures the default grpc endpoint "0.0.0.0:4317"
-	grpc { }
-	// configures the default http/protobuf endpoint "0.0.0.0:4318"
-	http { }
+	http {
+		endpoint = "0.0.0.0:4318"
+	}
 
 	output {
 		metrics = [otelcol.processor.batch.containers.input]

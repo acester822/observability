@@ -1,5 +1,12 @@
-server:
+ server:
   http_listen_port: 3200
+
+query_frontend:
+  search:
+    duration_slo: 5s
+    throughput_bytes_slo: 1.073741824e+09
+  trace_by_id:
+    duration_slo: 5s
 
 distributor:
   receivers:                           # this configuration will listen on all ports and protocols that tempo is capable of.
@@ -26,7 +33,7 @@ compactor:
       
 querier:
   frontend_worker:
-    frontend_address: query-frontend:9095
+    frontend_address: smm-tempo:9095
 
 storage:
   trace:

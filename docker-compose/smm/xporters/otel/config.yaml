@@ -1,100 +1,14 @@
 receivers:
-
   otlp:
     protocols:
       grpc:
-        endpoint: grafana-agent-cluster
-      http:
-        endpoint: grafana-agent-cluster
-
-  docker_stats:
-    metrics:
-      container.cpu.usage.total:
-        enabled: true
-      container.cpu.throttling_data.periods:
-        enabled: true
-      container.cpu.throttling_data.throttled_periods:
-        enabled: true
-      # `container.cpu.percent` is deprecated in favor of `container.cpu.utilization` in opentelemetry-collector-contrib v0.79.0
-      container.cpu.utilization:
-        enabled: true
-      container.cpu.percent:
-        enabled: false
-      container.memory.usage.limit:
-        enabled: true
-      container.memory.usage.total:
-        enabled: true
-      container.memory.percent:
-        enabled: true
-      container.blockio.io_service_bytes_recursive:
-        enabled: true
-      container.network.io.usage.rx_bytes:
-        enabled: true
-      container.network.io.usage.tx_bytes:
-        enabled: true
-      container.network.io.usage.rx_dropped:
-        enabled: true
-      container.network.io.usage.tx_dropped:
-        enabled: true
-      container.network.io.usage.rx_errors:
-        enabled: true
-      container.network.io.usage.tx_errors:
-        enabled: true
-      container.network.io.usage.rx_packets:
-        enabled: true
-      container.network.io.usage.tx_packets:
-        enabled: true
-      container.pids.count:
-        enabled: true
-
-processors:
-
-  # resource and resource-detection processors allow decorating the metrics with host attributes
-  resource:
-    attributes:
-      - key: host.id
-        from_attribute: host.name
-        action: insert
-
-  resourcedetection:
-    detectors: ["env", "system"]
-
-  resourcedetection/cloud:
-    detectors: ["gcp", "ec2", "azure"]
-    timeout: 2s
-    override: false
-
 exporters:
-#  otlp:
-#   endpoint: http://192.168.176.35:12345
-#   tls:
-#      insecure: true
-#   Data sources: traces, metrics
-  otlphttp:
-    endpoint: http://gateway:4318/otlp
+  otlp:
+    endpoint: tempo:4317
     tls:
       insecure: true
-
-  # Data sources: metrics
-  #prometheus:
-  #  endpoint: prometheus:8889
-  #  namespace: default
-
-  # Data sources: metrics
- # prometheusremotewrite:
- #   endpoint: http://some.url:9411/api/prom/push
-    # For official Prometheus (e.g. running via Docker)
-    # endpoint: 'http://grafana-agent-cluster:12345/api/v1/write'
-
-
 service:
-  telemetry:
-    logs:
   pipelines:
-    metrics:
-      receivers: [docker_stats]
-      processors:
-        - resourcedetection
-        - resourcedetection/cloud
-        - resource
-      exporters: [otlphttp]
+    traces:
+      receivers: [otlp]
+      exporters: [otlp]
