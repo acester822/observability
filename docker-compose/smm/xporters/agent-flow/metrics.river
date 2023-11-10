@@ -133,7 +133,7 @@ loki.process "containers" {
 	}
 
 	stage.tenant {
-		value = "acester822"
+		value = "anonymous"
 	}
 }
 
@@ -158,6 +158,17 @@ otelcol.receiver.otlp "containers" {
 }
 
 otelcol.processor.batch "containers" {
+	output {
+		metrics = [otelcol.processor.memory_limiter.containers.input]
+		logs    = [otelcol.processor.memory_limiter.containers.input]
+		traces  = [otelcol.processor.memory_limiter.containers.input]
+	}
+}
+
+otelcol.processor.memory_limiter "containers" {
+	check_interval = "1s"
+	limit          = "256MiB"
+
 	output {
 		metrics = [otelcol.exporter.prometheus.containers.input]
 		logs    = [otelcol.exporter.loki.containers.input]
