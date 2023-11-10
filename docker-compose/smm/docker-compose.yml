@@ -61,13 +61,6 @@ services:
      # - 4318:4318 # OTLP http receiver
      # - 55679:55679 # zpages extension
 
-  jaeger:
-    image: jaegertracing/all-in-one
-    container_name: jaeger
-    ports:
-      - 16686:16686
-      - "14268"
-
   gateway: #All
     image: nginxinc/nginx-unprivileged:1.25-alpine
     container_name: gateway

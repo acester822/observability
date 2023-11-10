@@ -9,14 +9,15 @@ datasources:
   orgId: 1
   url: http://gateway:8080/prometheus
   basicAuth: false
-  isDefault: true # Note: default datasources
+  isDefault: true
+  version: 1
+  editable: true
   jsonData:
     prometheusType: Mimir
     exemplarTraceIdDestinations:
-    - name: traceID
-      datasourceUid: jaeger
-  version: 1
-  editable: true
+      - name: traceID
+        datasourceUid: traces
+
 
 # Loki for logs
 - name: Logs
@@ -29,6 +30,13 @@ datasources:
   isDefault: false
   version: 1
   editable: true
+  jsonData:
+    derivedFields:
+      - datasourceUid: traces
+        matcherRegex: traceID=(\w+)
+        name: TraceID
+        url: $${__value.raw}
+
 
 # Tempo for traces
 - name: Traces
@@ -42,6 +50,17 @@ datasources:
   version: 1
   editable: true
   apiVersion: 1
+  jsonData:
+    lokiSearch:
+      datasourceUid: logs
+    nodeGraph:
+      enabled: true
+    serviceMap:
+      datasourceUid: metrics
+    tracesToLogsV2:
+      customQuery: false
+      datasourceUid: logs
+
 
 # Pyroscope for profiles
 - name: Profiles
@@ -51,13 +70,6 @@ datasources:
   uid: profiles
   url: http://pyroscope:4040
   basicAuth: false
-  isDefault: false # Note: default datasources
+  isDefault: false
   version: 1
   editable: true
-  
-- name: Jaeger
-  type: jaeger
-  access: proxy
-  uid: jaeger
-  orgID: 1
-  url: http://jaeger:16686/
