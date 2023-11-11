@@ -56,7 +56,7 @@ server {
     location = /api/v1/status/buildinfo {
       proxy_pass      http://${QUERY_FRONTEND_HOST}:8080$request_uri;
     }
-    
+
     # Compactor endpoint for uploading blocks
     location /api/v1/upload/block/ {
       proxy_pass      http://${COMPACTOR_HOST}:8080$request_uri;
