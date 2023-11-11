@@ -266,7 +266,7 @@ services:
 
   load-tempo-rules:
     depends_on:
-      tempo:
+      minio:
         condition: service_healthy
     image: grafana/mimirtool:2.10.3
     volumes:
