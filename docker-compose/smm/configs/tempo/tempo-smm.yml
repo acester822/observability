@@ -31,7 +31,7 @@ compactor:
 querier:
   frontend_worker:
     frontend_address: tempo:9095
-
+    
 storage:
   trace:
     backend: s3

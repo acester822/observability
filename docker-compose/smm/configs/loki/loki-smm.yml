@@ -42,6 +42,8 @@ chunk_store_config:
       enabled: true
 
 query_range:
+  parallelise_shardable_queries: false
+  split_queries_by_interval: 0s
   align_queries_with_step: true
   cache_results: true
   results_cache:

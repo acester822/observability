@@ -20,45 +20,35 @@ common:
       secret_access_key: 228retseca
       insecure:          true
 
-alertmanager:
-  data_dir: /data/alertmanager
-  enable_api: true
-  external_url: /alertmanager
-  fallback_config_file: /etc/mimir/alertmanager-fallback-config.yml
-alertmanager_storage:
-  s3:
-    bucket_name: mimir-alertmanager
+memberlist:
+  join_members: [ mimir-memberlist:7946 ]
+
+ingester:
+  ring:
+    replication_factor: 1
+
+store_gateway:
+  sharding_ring:
+    replication_factor: 1
 
 blocks_storage:
   s3:
     bucket_name: mimir-data
   tsdb:
     dir: /data/ingester
+    ship_interval: 1m
+    block_ranges_period: [ 2h ]
+    retention_period: 3h
 
-frontend:
-  parallelize_shardable_queries: true
-  scheduler_address: query-scheduler:9095
-frontend_worker:
-  grpc_client_config:
-    max_send_msg_size: 419430400
-  scheduler_address: query-scheduler:9095
-
-memberlist:
-  join_members: [ mimir-memberlist:7946 ]
-
-ruler:
-  rule_path: /data/rules
-  enable_api: true
-  alertmanager_url: http://alertmanager:8080/alertmanager
 ruler_storage:
   s3:
     bucket_name: mimir-rules
 
-runtime_config:
-  file: /etc/mimir/runtime.yml
-
-query_scheduler:
-  max_outstanding_requests_per_tenant: 800
+compactor:
+  compaction_interval: 30s
+  data_dir: /tmp/mimir-compactor
+  cleanup_interval:    1m
+  tenant_cleanup_delay: 1m
 
 limits:
   native_histograms_ingestion_enabled: true

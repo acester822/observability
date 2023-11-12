@@ -25,7 +25,6 @@ argument "logs_endpoint" {
 
 argument "traces_endpoint" {
 	optional = true
-	default  = "http://gateway:4317"
 	//comment = "Where to send collected traces."
 }
 
@@ -88,7 +87,7 @@ loki.write "docker_compose" {
 // Traces
 otelcol.exporter.otlp "docker_compose" {
 	client {
-		endpoint = argument.metrics_endpoint.value
+		endpoint = argument.traces_endpoint.value
 
 		tls {
 			insecure             = true
