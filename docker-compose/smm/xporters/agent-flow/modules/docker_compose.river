@@ -25,6 +25,7 @@ argument "logs_endpoint" {
 
 argument "traces_endpoint" {
 	optional = true
+	default  = "http://tempo:4317"
 	//comment = "Where to send collected traces."
 }
 
