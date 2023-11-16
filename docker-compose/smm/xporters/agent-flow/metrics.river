@@ -62,15 +62,8 @@ discovery.relabel "docker_containers" {
   }
   rule {
     action        = "replace"
-    source_labels = ["__meta_docker_container_label_namespace","__meta_docker_container_label_com_docker_compose_service"]
+    source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
     target_label  = "job"
-    separator     = "/"
-  }
-  rule {
-    action        = "replace"
-    source_labels = ["__meta_docker_container_label_namespace","container"]
-    target_label  = "job"
-    separator     = "/"
   }
   rule {
     action        = "replace"
