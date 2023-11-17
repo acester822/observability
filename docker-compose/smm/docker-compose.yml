@@ -39,7 +39,7 @@ services:
       - "12345"
     # scale up support
     deploy:
-      replicas: 1
+      replicas: 2
     networks:
       default:
         aliases:
@@ -141,7 +141,7 @@ services:
     # Horizontally scale up support(Monolithic mode)
     # https://grafana.com/docs/loki/latest/fundamentals/architecture/deployment-modes/#simple-scalable-deployment-mode
     deploy:
-      replicas: 1
+      replicas: 2
     networks:
       default:
         aliases:
@@ -152,8 +152,6 @@ services:
     depends_on:
       minio:
         condition: service_healthy
-      gateway:
-        condition: service_started
     restart: always
     volumes:
       - ../smm/configs/tempo/tempo-smm.yml:/etc/tempo.yaml # Note: Tempo use scalable-single-binary.yaml
@@ -171,7 +169,7 @@ services:
      # Horizontally scale up support(Monolithic mode)
      # https://grafana.com/docs/tempo/latest/setup/deployment/#scaling-monolithic-mode
     deploy:
-      replicas: 1
+      replicas: 2
     networks:
       default:
         aliases:
