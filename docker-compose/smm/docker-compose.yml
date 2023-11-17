@@ -100,7 +100,7 @@ services:
         condition: service_healthy
     command:
       - -config.file=/etc/mimir/mimir-smm.yml
-      - -target=all,alertmanager,overrides-exporter
+      - -target=all,alertmanager
       - -log.level=error
     volumes:
       - ../smm/configs/mimir/:/etc/mimir

@@ -1,4 +1,4 @@
-target: all,alertmanager,overrides-exporter
+target: all,alertmanager
 
 common:
   storage:
