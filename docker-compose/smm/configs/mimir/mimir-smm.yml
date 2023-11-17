@@ -11,7 +11,6 @@ common:
       
 server:
   http_listen_port: 8080
-  grpc_listen_port: 9095
   log_level: warn
 
 blocks_storage:
@@ -58,7 +57,6 @@ ingester:
   ring:
     kvstore:
       store: memberlist
-    replication_factor: 1
 
 alertmanager:
   data_dir: /data/mimir-alertmanager
@@ -82,7 +80,6 @@ store_gateway:
   sharding_ring:
     kvstore:
       store: memberlist
-    replication_factor: 1
     
 limits:
   native_histograms_ingestion_enabled: true
