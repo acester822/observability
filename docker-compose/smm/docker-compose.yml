@@ -227,8 +227,8 @@ services:
         condition: service_healthy
     image: grafana/mimirtool:2.10.3
     volumes:
-      - ../smm/monitoring-mixins/mimir-mixin/deploy/rules.yaml:/mimir-mixin/rules.yaml
-      - ../smm/monitoring-mixins/mimir-mixin/deploy/alerts.yaml:/mimir-mixin/alerts.yaml
+      - ../smm/rules-alerts/Mimir/rules.yaml:/mimir-mixin/rules.yaml
+      - ../smm/rules-alerts/Mimir/alerts.yaml:/mimir-mixin/alerts.yaml
     environment:
       - MIMIR_ADDRESS=http://gateway:8080
       - MIMIR_TENANT_ID=anonymous
@@ -245,8 +245,8 @@ services:
         condition: service_healthy
     image: grafana/mimirtool:2.10.3
     volumes:
-      - ../smm//monitoring-mixins/loki-mixin/deploy/rules.yaml:/loki-mixin/rules.yaml
-      - ../smm/monitoring-mixins/loki-mixin/deploy/alerts.yaml:/loki-mixin/alerts.yaml
+      - ../smm/rules-alerts/Loki/rules.yaml:/loki-mixin/rules.yaml
+      - ../smm/rules-alerts/Loki/alerts.yaml:/loki-mixin/alerts.yaml
     environment:
       - MIMIR_ADDRESS=http://gateway:8080
       - MIMIR_TENANT_ID=anonymous
@@ -263,13 +263,31 @@ services:
         condition: service_healthy
     image: grafana/mimirtool:2.10.3
     volumes:
-      - ../smm/monitoring-mixins/tempo-mixin/deploy/rules.yaml:/tempo-mixin/rules.yaml
-      - ../smm/monitoring-mixins/tempo-mixin/deploy/alerts.yaml:/tempo-mixin/alerts.yaml
+      - ../smm/rules-alerts/Tempo/rules.yaml:/tempo-mixin/rules.yaml
+      - ../smm/rules-alerts/Tempo/alerts.yaml:/tempo-mixin/alerts.yaml
     environment:
       - MIMIR_ADDRESS=http://gateway:8080
       - MIMIR_TENANT_ID=anonymous
     command: >-
       rules load /tempo-mixin/rules.yaml /tempo-mixin/alerts.yaml
+      
+  load-agent-rules:
+    depends_on:
+      tempo:
+        condition: service_started
+      mimir:
+        condition: service_healthy
+      loki:
+        condition: service_healthy
+    image: grafana/mimirtool:2.10.3
+    volumes:
+      - ../smm/rules-alerts/Agent/rules.yaml:/agent-mixin/rules.yaml
+      - ../smm/rules-alerts/Agent/alerts.yaml:/agent-mixin/alerts.yaml
+    environment:
+      - MIMIR_ADDRESS=http://gateway:8080
+      - MIMIR_TENANT_ID=anonymous
+    command: >-
+      rules load /agent-mixin/rules.yaml /agent-mixin/alerts.yaml
 
   grafana: #From AIO
     image: grafana/grafana-dev:10.3.0-144189
@@ -280,12 +298,7 @@ services:
       - ../smm/configs/grafana/grafana.ini:/etc/grafana-config/grafana.ini
       - ../smm/configs/grafana/dashboards:/var/lib/grafana/dashboards
       - ../smm/configs/grafana/provisioning:/etc/grafana/provisioning
-      - ../smm/configs/grafana/datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml #need to make sure this is correct, reference grafana git not the AIO
-      - ../smm/monitoring-mixins/mimir-mixin/deploy/dashboards_out:/var/lib/grafana/dashboards/mimir  # load mimir dashboards
-      - ../smm/monitoring-mixins/loki-mixin/deploy/dashboards_out:/var/lib/grafana/dashboards/loki    # load loki dashboards
-      - ../smm/monitoring-mixins/tempo-mixin/deploy/dashboards_out:/var/lib/grafana/dashboards/tempo  # load tempo dashboards
-      - ../smm/monitoring-mixins/agent-flow-mixin/deploy/dashboards_out:/var/lib/grafana/dashboards/agent-flow
-      - ../smm/monitoring-mixins/go-runtime-mixin/deploy/dashboards_out:/var/lib/grafana/dashboards/go
+      - ../smm/configs/grafana/datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
     environment:
       - GF_LOG_LEVEL=error
       - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD:-admin_password}
