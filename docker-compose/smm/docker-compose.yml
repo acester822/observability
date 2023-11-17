@@ -48,6 +48,9 @@ services:
   gateway: #All
     image: nginxinc/nginx-unprivileged:1.25-alpine
     container_name: gateway
+    depends_on:
+      tempo:
+        condition: service_started
     volumes:
       - ../smm/configs/nginx:/etc/nginx/templates
     environment:
