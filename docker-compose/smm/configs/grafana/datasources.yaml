@@ -17,6 +17,15 @@ datasources:
     exemplarTraceIdDestinations:
       - name: traceID
         datasourceUid: traces
+        
+- name: Mimir Alertmanager
+  uid: alertmanager
+  type: alertmanager
+  access: proxy
+  orgId: 1
+  url: http://gateway:8080/alertmanager
+  version: 1
+  editable: true
 
 
 # Loki for logs
