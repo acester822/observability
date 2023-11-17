@@ -103,7 +103,7 @@ services:
       - -target=all,alertmanager
       - -log.level=error
     volumes:
-      - ../smm/configs/mimir/mimir-smm.yml:/etc/mimir/mmir-smm.yml
+      - ../smm/configs/mimir:/etc/mimir
       - ../smm/configs/mimir/alertmanager-fallback.yml:/etc/mimir/alertmanager-fallback.yml
     healthcheck:
       test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/ready || exit 1" ]
