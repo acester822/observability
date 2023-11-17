@@ -200,7 +200,7 @@ services:
       - sh
       - -euc
       - |
-        mkdir -p /data/mimir-data /data/mimir-rules /data/mimir-alertmanager && \
+        mkdir -p /data/mimir-data /data/mimir-rules /data/mimir-alertmanager /data/mimir-compactor /data/mimir-ingester && \
         mkdir -p /data/loki-data /data/loki-rules && \
         mkdir -p /data/tempo-data  && \
         mkdir -p /data/pyroscope-data && \
