@@ -39,7 +39,7 @@ services:
       - "12345"
     # scale up support
     deploy:
-      replicas: 2
+      replicas: 4
     networks:
       default:
         aliases:
@@ -82,12 +82,12 @@ services:
       retries: 5
     ports:
       - "8080"    # Mimir
-      - "3100"    # Mimir
-      - "3200"    # Tempo
-      - "9095"    # Tempo GPRC
-      - "4317"    # Otlp GPRC
-      - "4318"    # Otlp HTTP
-      - "9411"    # Zipkin
+      - "3100:3100"    # Mimir
+      - "3200:3200"    # Tempo
+      - "9095:9095"    # Tempo GPRC
+      - "4317:4317"    # Otlp GPRC
+      - "4318:4318"    # Otlp HTTP
+      - "9411:9411"    # Zipkin
     networks:
       default:
         aliases:
@@ -104,8 +104,6 @@ services:
       - -log.level=error
     volumes:
       - ../smm/configs/mimir/:/etc/mimir
-    ports:
-      - "8080"
     healthcheck:
       test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/ready || exit 1" ]
       interval: 10s
@@ -114,7 +112,7 @@ services:
     # Horizontally scale up support(Monolithic mode)
     # https://grafana.com/docs/mimir/latest/references/architecture/deployment-modes/#monolithic-mode
     deploy:
-      replicas: 1
+      replicas: 4
     networks:
       default:
         aliases:
@@ -131,8 +129,6 @@ services:
       - -log.level=error
     volumes:
       - ../smm/configs/loki/loki-smm.yml:/etc/loki.yaml
-    ports:
-      - "3100"
     healthcheck:
       test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3100/ready || exit 1" ]
       interval: 10s
@@ -141,7 +137,7 @@ services:
     # Horizontally scale up support(Monolithic mode)
     # https://grafana.com/docs/loki/latest/fundamentals/architecture/deployment-modes/#simple-scalable-deployment-mode
     deploy:
-      replicas: 2
+      replicas: 4
     networks:
       default:
         aliases:
@@ -164,12 +160,10 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    ports:
-      - "3200"
      # Horizontally scale up support(Monolithic mode)
      # https://grafana.com/docs/tempo/latest/setup/deployment/#scaling-monolithic-mode
     deploy:
-      replicas: 2
+      replicas: 4
     networks:
       default:
         aliases:
@@ -188,7 +182,7 @@ services:
       - -target=all
       - -log.level=warn
     ports:
-      - "4040"
+      - "4040:4040"
     networks:
       default:
         aliases:
