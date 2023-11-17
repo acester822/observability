@@ -138,7 +138,7 @@ prometheus.scrape "agent_exporter" {
   targets    = prometheus.exporter.agent.host.targets
   forward_to = [prometheus.remote_write.mimir.receiver, prometheus.remote_write.prometheus.receiver]
   scrape_interval = "14s"
-  scrape_timeout  = "15s" // Why does this need to be larger than the interval?  
+   // Why does this need to be larger than the interval?  
 }
 
 prometheus.scrape "cadvisor_exporter" {
@@ -146,7 +146,7 @@ prometheus.scrape "cadvisor_exporter" {
   targets    = prometheus.exporter.cadvisor.docker.targets
   forward_to = [prometheus.relabel.cadvisor_exporter.receiver]
   scrape_interval = "14s"
-  scrape_timeout  = "15s" // Why does this need to be larger than the interval?
+   // Why does this need to be larger than the interval?
 }
 
 prometheus.scrape "default" {
@@ -157,7 +157,7 @@ prometheus.scrape "default" {
   job_name = "example/prometheus"
   forward_to = [prometheus.remote_write.mimir.receiver, prometheus.remote_write.prometheus.receiver]
   scrape_interval = "14s"
-  scrape_timeout  = "15s" // Why does this need to be larger than the interval?
+   // Why does this need to be larger than the interval?
 }
 
 prometheus.scrape "docker_containers" {
@@ -166,7 +166,7 @@ prometheus.scrape "docker_containers" {
   )
   forward_to = [prometheus.relabel.docker_containers.receiver]
   scrape_interval = "14s"
-  scrape_timeout  = "15s" // Why does this need to be larger than the interval?
+   // Why does this need to be larger than the interval?
 }
 
 prometheus.scrape "docker_local" {
@@ -177,7 +177,7 @@ prometheus.scrape "docker_local" {
   job_name = "monitoring/docker"
   forward_to = [prometheus.remote_write.mimir.receiver, prometheus.remote_write.prometheus.receiver]
   scrape_interval = "14s"
-  scrape_timeout  = "15s" // Why does this need to be larger than the interval?
+   // Why does this need to be larger than the interval?
 }
 
 prometheus.scrape "minio" {
@@ -188,7 +188,7 @@ prometheus.scrape "minio" {
   metrics_path = "/minio/prometheus/metrics"
   forward_to = [prometheus.remote_write.mimir.receiver, prometheus.remote_write.prometheus.receiver]
   scrape_interval = "14s"
-  scrape_timeout  = "15s" // Why does this need to be larger than the interval?
+   // Why does this need to be larger than the interval?
 }
 
 prometheus.scrape "minio_v2" {
@@ -199,7 +199,7 @@ prometheus.scrape "minio_v2" {
   metrics_path = "/minio/v2/metrics/cluster"
   forward_to = [prometheus.remote_write.mimir.receiver, prometheus.remote_write.prometheus.receiver]
   scrape_interval = "14s"
-  scrape_timeout  = "15s" // Why does this need to be larger than the interval?
+   // Why does this need to be larger than the interval?
 }
 
 prometheus.scrape "mysql_exporter" {
@@ -207,7 +207,7 @@ prometheus.scrape "mysql_exporter" {
   targets    = prometheus.exporter.mysql.grafanadb.targets
   forward_to = [prometheus.relabel.mysql_exporter.receiver]
   scrape_interval = "14s"
-  scrape_timeout  = "15s" // Why does this need to be larger than the interval?
+   // Why does this need to be larger than the interval?
 }
 
 prometheus.scrape "node_exporter" {
@@ -215,7 +215,7 @@ prometheus.scrape "node_exporter" {
   targets    = prometheus.exporter.unix.host.targets
   forward_to = [prometheus.relabel.node_exporter.receiver]
   scrape_interval = "14s"
-  scrape_timeout  = "15s" // Why does this need to be larger than the interval?
+   // Why does this need to be larger than the interval?
 }
 
 prometheus.scrape "prometheus" {
@@ -225,7 +225,7 @@ prometheus.scrape "prometheus" {
   job_name = "prometheus"
   forward_to = [prometheus.remote_write.mimir.receiver, prometheus.remote_write.prometheus.receiver]
   scrape_interval = "14s"
-  scrape_timeout  = "15s" // Why does this need to be larger than the interval?
+   // Why does this need to be larger than the interval?
 }
 
 prometheus.scrape "redis_exporter" {
@@ -233,7 +233,7 @@ prometheus.scrape "redis_exporter" {
   targets    = prometheus.exporter.redis.grafana_caching.targets
   forward_to = [prometheus.relabel.redis_exporter.receiver]
   scrape_interval = "14s"
-  scrape_timeout  = "15s" // Why does this need to be larger than the interval?
+   // Why does this need to be larger than the interval?
 }
 
 prometheus.relabel "cadvisor_exporter" {
@@ -457,7 +457,7 @@ pyroscope.scrape "default" {
   )
   forward_to      = [pyroscope.write.local.receiver]
   scrape_interval = "14s"
-  scrape_timeout  = "15s" // Why does this need to be larger than the interval?
+   // Why does this need to be larger than the interval?
 }
 
 pyroscope.write "local" {
