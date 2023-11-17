@@ -1,4 +1,4 @@
-target: all,alertmanager
+target: all,alertmanager,overrides-exporter
 
 common:
   storage:
@@ -8,16 +8,10 @@ common:
       access_key_id:     acester822
       secret_access_key: 228retseca
       insecure:          true
+      bucket_name: mimir-data
       
-server:
-  http_listen_port: 8080
-  log_level: warn
-
 blocks_storage:
-  s3:
-    bucket_name: mimir-data
-  bucket_store:
-    sync_interval: 15m
+  storage_prefix: blocks
   tsdb:
     retention_period: 2h
     ship_interval: 5m
@@ -26,60 +20,20 @@ blocks_storage:
 memberlist:
   join_members: [ mimir-memberlist:7946 ]
 
-tenant_federation:
-  enabled: true
-
-compactor:
-  data_dir: /data/mimir-compactor
-  compaction_interval: 2m
-  cleanup_interval: 5m
-  sharding_ring:
-    kvstore:
-      store: memberlist
-
-querier:
-  query_ingesters_within: 5h
-  query_store_after: 2h
-  max_query_into_future: 12h
-
-frontend:
- #align_queries_with_step: true
- log_queries_longer_than: 10s
-
-distributor:
-  ring:
-    kvstore:
-      store: memberlist
-  ha_tracker:
-    enable_ha_tracker: true
-
-ingester:
-  ring:
-    kvstore:
-      store: memberlist
-
-alertmanager:
-  data_dir: /data/mimir-alertmanager
-  enable_api: true
-  external_url: /alertmanager
-  fallback_config_file: /etc/mimir/alertmanager-fallback.yml
-
 ruler:
   rule_path: /data/mimir-rules
   alertmanager_url: http://gateway:8080/alertmanager
   ring:
     # Quickly detect unhealthy rulers to speed up the tutorial.
-    heartbeat_period: 15s
-    heartbeat_timeout: 1m
+    heartbeat_period: 2s
+    heartbeat_timeout: 10s
 
-ruler_storage:
-  s3:
-    bucket_name: mimir-rules
-  
-store_gateway:
-  sharding_ring:
-    kvstore:
-      store: memberlist
-    
-limits:
-  native_histograms_ingestion_enabled: true
+alertmanager:
+  data_dir: /data/mimir-alertmanager
+  enable_api: true
+  fallback_config_file: /etc/alertmanager-fallback.yml
+  external_url: /alertmanager
+
+server:
+  http_listen_port: 8080
+  log_level: warn
