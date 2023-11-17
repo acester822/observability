@@ -301,5 +301,12 @@ services:
       - GF_TRACING_OPENTELEMETRY_OTLP_ADDRESS=agent:4317
       - GF_TRACING_OPENTELEMETRY_CUSTOM_ATTRIBUTES=cluster:docker-compose,namespace:monitoring
       - GF_INSTALL_PLUGINS=pyroscope-panel
+    labels:
+      - "traefik.enable=true"
+      - 'traefik.http.routers.grafana.rule=Host(`grafana.freetherabbit.xyz`)'
+      - "traefik.http.routers.grafana.entrypoints=websecure"
+      - "traefik.http.routers.grafana.tls.certresolver=letsencrypt
+      - "traefik.http.routers.grafana.middlewares=traefik-forward-auth"
+      - "traefik.docker.network=utilities"
     ports:
       - "3000:3000"
