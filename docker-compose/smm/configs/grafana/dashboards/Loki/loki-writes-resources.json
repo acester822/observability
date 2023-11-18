@@ -73,21 +73,24 @@
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "{{pod}}",
-                        "legendLink": null
+                        "legendLink": null,
+                        "step": 10
                      },
                      {
                         "expr": "min(kube_pod_container_resource_requests{cluster=~\"$cluster\", namespace=~\"$namespace\", container=~\"distributor\", resource=\"cpu\"} > 0)",
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "request",
-                        "legendLink": null
+                        "legendLink": null,
+                        "step": 10
                      },
                      {
                         "expr": "min(container_spec_cpu_quota{cluster=~\"$cluster\", namespace=~\"$namespace\", container=~\"distributor\"} / container_spec_cpu_period{cluster=~\"$cluster\", namespace=~\"$namespace\", container=~\"distributor\"})",
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "limit",
-                        "legendLink": null
+                        "legendLink": null,
+                        "step": 10
                      }
                   ],
                   "thresholds": [ ],
@@ -171,21 +174,24 @@
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "{{pod}}",
-                        "legendLink": null
+                        "legendLink": null,
+                        "step": 10
                      },
                      {
                         "expr": "min(kube_pod_container_resource_requests{cluster=~\"$cluster\", namespace=~\"$namespace\", container=~\"distributor\", resource=\"memory\"} > 0)",
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "request",
-                        "legendLink": null
+                        "legendLink": null,
+                        "step": 10
                      },
                      {
                         "expr": "min(container_spec_memory_limit_bytes{cluster=~\"$cluster\", namespace=~\"$namespace\", container=~\"distributor\"} > 0)",
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "limit",
-                        "legendLink": null
+                        "legendLink": null,
+                        "step": 10
                      }
                   ],
                   "thresholds": [ ],
@@ -258,7 +264,8 @@
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "{{pod}}",
-                        "legendLink": null
+                        "legendLink": null,
+                        "step": 10
                      }
                   ],
                   "thresholds": [ ],
@@ -344,7 +351,8 @@
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "{{pod}}",
-                        "legendLink": null
+                        "legendLink": null,
+                        "step": 10
                      }
                   ],
                   "thresholds": [ ],
@@ -429,21 +437,24 @@
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "{{pod}}",
-                        "legendLink": null
+                        "legendLink": null,
+                        "step": 10
                      },
                      {
                         "expr": "min(kube_pod_container_resource_requests{cluster=~\"$cluster\", namespace=~\"$namespace\", container=\"ingester\", resource=\"cpu\"} > 0)",
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "request",
-                        "legendLink": null
+                        "legendLink": null,
+                        "step": 10
                      },
                      {
                         "expr": "min(container_spec_cpu_quota{cluster=~\"$cluster\", namespace=~\"$namespace\", container=\"ingester\"} / container_spec_cpu_period{cluster=~\"$cluster\", namespace=~\"$namespace\", container=\"ingester\"})",
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "limit",
-                        "legendLink": null
+                        "legendLink": null,
+                        "step": 10
                      }
                   ],
                   "thresholds": [ ],
@@ -528,21 +539,24 @@
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "{{pod}}",
-                        "legendLink": null
+                        "legendLink": null,
+                        "step": 10
                      },
                      {
                         "expr": "min(kube_pod_container_resource_requests{cluster=~\"$cluster\", namespace=~\"$namespace\", container=\"ingester\", resource=\"memory\"} > 0)",
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "request",
-                        "legendLink": null
+                        "legendLink": null,
+                        "step": 10
                      },
                      {
                         "expr": "min(container_spec_memory_limit_bytes{cluster=~\"$cluster\", namespace=~\"$namespace\", container=\"ingester\"} > 0)",
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "limit",
-                        "legendLink": null
+                        "legendLink": null,
+                        "step": 10
                      }
                   ],
                   "thresholds": [ ],
@@ -616,7 +630,8 @@
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "{{pod}}",
-                        "legendLink": null
+                        "legendLink": null,
+                        "step": 10
                      }
                   ],
                   "thresholds": [ ],
@@ -690,7 +705,8 @@
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "{{pod}} - {{device}}",
-                        "legendLink": null
+                        "legendLink": null,
+                        "step": 10
                      }
                   ],
                   "thresholds": [ ],
@@ -766,7 +782,8 @@
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "{{pod}} - {{device}}",
-                        "legendLink": null
+                        "legendLink": null,
+                        "step": 10
                      }
                   ],
                   "thresholds": [ ],
@@ -842,7 +859,8 @@
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "{{persistentvolumeclaim}}",
-                        "legendLink": null
+                        "legendLink": null,
+                        "step": 10
                      }
                   ],
                   "thresholds": [ ],

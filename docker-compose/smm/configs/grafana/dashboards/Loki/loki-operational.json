@@ -246,6 +246,102 @@
             "gridPos": {
                "h": 5,
                "w": 4,
+               "x": 8,
+               "y": 1
+            },
+            "hiddenSeries": false,
+            "id": 11,
+            "legend": {
+               "avg": false,
+               "current": false,
+               "hideEmpty": false,
+               "hideZero": false,
+               "max": false,
+               "min": false,
+               "show": false,
+               "total": false,
+               "values": false
+            },
+            "lines": true,
+            "linewidth": 1,
+            "nullPointMode": "null",
+            "options": {
+               "dataLinks": [ ]
+            },
+            "panels": [ ],
+            "percentage": false,
+            "pointradius": 2,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [ ],
+            "spaceLength": 10,
+            "stack": false,
+            "steppedLine": false,
+            "targets": [
+               {
+                  "expr": "topk(5, sum by (name,level) (rate(promtail_custom_bad_words_total{cluster=\"$cluster\", exported_namespace=\"$namespace\"}[$__interval])) - \nsum by (name,level) (rate(promtail_custom_bad_words_total{cluster=\"$cluster\", exported_namespace=\"$namespace\"}[$__interval] offset 1h)))",
+                  "legendFormat": "{{name}}-{{level}}",
+                  "refId": "A"
+               }
+            ],
+            "thresholds": [ ],
+            "timeFrom": null,
+            "timeRegions": [ ],
+            "timeShift": null,
+            "title": "Bad Words",
+            "tooltip": {
+               "shared": true,
+               "sort": 2,
+               "value_type": "individual"
+            },
+            "type": "graph",
+            "xaxis": {
+               "buckets": null,
+               "mode": "time",
+               "name": null,
+               "show": true,
+               "values": [ ]
+            },
+            "yaxes": [
+               {
+                  "format": "short",
+                  "label": null,
+                  "logBase": 1,
+                  "max": null,
+                  "min": null,
+                  "show": true
+               },
+               {
+                  "format": "short",
+                  "label": null,
+                  "logBase": 1,
+                  "max": null,
+                  "min": null,
+                  "show": true
+               }
+            ],
+            "yaxis": {
+               "align": false,
+               "alignLevel": null
+            }
+         },
+         {
+            "aliasColors": { },
+            "bars": false,
+            "dashLength": 10,
+            "dashes": false,
+            "datasource": "$datasource",
+            "fieldConfig": {
+               "defaults": {
+                  "custom": { }
+               },
+               "overrides": [ ]
+            },
+            "fill": 1,
+            "fillGradient": 0,
+            "gridPos": {
+               "h": 5,
+               "w": 4,
                "x": 12,
                "y": 1
             },
@@ -5231,7 +5327,7 @@
                   "steppedLine": false,
                   "targets": [
                      {
-                        "expr": "sum(rate(cortex_dynamo_failures_total{cluster=\"$cluster\", namespace=\"$namespace\"}[5m]))",
+                        "expr": "sum(rate(loki_dynamo_failures_total{cluster=\"$cluster\", namespace=\"$namespace\"}[5m]))",
                         "refId": "A"
                      }
                   ],
@@ -5317,7 +5413,7 @@
                   "steppedLine": false,
                   "targets": [
                      {
-                        "expr": "sum(rate(cortex_dynamo_consumed_capacity_total{cluster=\"$cluster\", namespace=\"$namespace\"}[5m]))",
+                        "expr": "sum(rate(loki_dynamo_consumed_capacity_total{cluster=\"$cluster\", namespace=\"$namespace\"}[5m]))",
                         "refId": "A"
                      }
                   ],
@@ -5403,7 +5499,7 @@
                   "steppedLine": false,
                   "targets": [
                      {
-                        "expr": "sum(rate(cortex_dynamo_throttled_total{cluster=\"$cluster\", namespace=\"$namespace\"}[5m]))",
+                        "expr": "sum(rate(loki_dynamo_throttled_total{cluster=\"$cluster\", namespace=\"$namespace\"}[5m]))",
                         "refId": "A"
                      }
                   ],
@@ -5489,7 +5585,7 @@
                   "steppedLine": false,
                   "targets": [
                      {
-                        "expr": "sum(rate(cortex_dynamo_dropped_requests_total{cluster=\"$cluster\", namespace=\"$namespace\"}[5m]))",
+                        "expr": "sum(rate(loki_dynamo_dropped_requests_total{cluster=\"$cluster\", namespace=\"$namespace\"}[5m]))",
                         "refId": "A"
                      }
                   ],
@@ -5575,17 +5671,17 @@
                   "steppedLine": false,
                   "targets": [
                      {
-                        "expr": "histogram_quantile(.99, sum(rate(cortex_dynamo_query_pages_count{cluster=\"$cluster\", namespace=\"$namespace\"}[5m])))",
+                        "expr": "histogram_quantile(.99, sum(rate(loki_dynamo_query_pages_count{cluster=\"$cluster\", namespace=\"$namespace\"}[5m])))",
                         "legendFormat": ".99",
                         "refId": "A"
                      },
                      {
-                        "expr": "histogram_quantile(.9, sum(rate(cortex_dynamo_query_pages_count{cluster=\"$cluster\", namespace=\"$namespace\"}[5m])))",
+                        "expr": "histogram_quantile(.9, sum(rate(loki_dynamo_query_pages_count{cluster=\"$cluster\", namespace=\"$namespace\"}[5m])))",
                         "legendFormat": ".9",
                         "refId": "B"
                      },
                      {
-                        "expr": "histogram_quantile(.5, sum(rate(cortex_dynamo_query_pages_count{cluster=\"$cluster\", namespace=\"$namespace\"}[5m])))",
+                        "expr": "histogram_quantile(.5, sum(rate(loki_dynamo_query_pages_count{cluster=\"$cluster\", namespace=\"$namespace\"}[5m])))",
                         "legendFormat": ".5",
                         "refId": "C"
                      }
@@ -5675,19 +5771,19 @@
                   "steppedLine": false,
                   "targets": [
                      {
-                        "expr": "histogram_quantile(.99, sum(rate(cortex_dynamo_request_duration_seconds_bucket{cluster=\"$cluster\", namespace=\"$namespace\"}[5m])) by (operation, le))",
+                        "expr": "histogram_quantile(.99, sum(rate(loki_dynamo_request_duration_seconds_bucket{cluster=\"$cluster\", namespace=\"$namespace\"}[5m])) by (operation, le))",
                         "intervalFactor": 1,
                         "legendFormat": ".99-{{operation}}",
                         "refId": "A"
                      },
                      {
-                        "expr": "histogram_quantile(.9, sum(rate(cortex_dynamo_request_duration_seconds_bucket{cluster=\"$cluster\", namespace=\"$namespace\"}[5m])) by (operation, le))",
+                        "expr": "histogram_quantile(.9, sum(rate(loki_dynamo_request_duration_seconds_bucket{cluster=\"$cluster\", namespace=\"$namespace\"}[5m])) by (operation, le))",
                         "hide": false,
                         "legendFormat": ".9-{{operation}}",
                         "refId": "B"
                      },
                      {
-                        "expr": "histogram_quantile(.5, sum(rate(cortex_dynamo_request_duration_seconds_bucket{cluster=\"$cluster\", namespace=\"$namespace\"}[5m])) by (operation, le))",
+                        "expr": "histogram_quantile(.5, sum(rate(loki_dynamo_request_duration_seconds_bucket{cluster=\"$cluster\", namespace=\"$namespace\"}[5m])) by (operation, le))",
                         "hide": false,
                         "legendFormat": ".5-{{operation}}",
                         "refId": "C"
@@ -5778,7 +5874,7 @@
                   "steppedLine": false,
                   "targets": [
                      {
-                        "expr": "sum(rate(cortex_dynamo_request_duration_seconds_count{cluster=\"$cluster\", namespace=\"$namespace\"}[5m])) by (status_code, operation)",
+                        "expr": "sum(rate(loki_dynamo_request_duration_seconds_count{cluster=\"$cluster\", namespace=\"$namespace\"}[5m])) by (status_code, operation)",
                         "intervalFactor": 1,
                         "legendFormat": "{{status_code}}-{{operation}}",
                         "refId": "A"

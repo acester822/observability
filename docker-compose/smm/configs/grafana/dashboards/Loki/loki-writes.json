@@ -33,7 +33,6 @@
                      "3xx": "#6ED0E0",
                      "4xx": "#EF843C",
                      "5xx": "#E24D42",
-                     "cancel": "#A9A9A9",
                      "error": "#E24D42",
                      "success": "#7EB26D"
                   },
@@ -71,7 +70,8 @@
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "{{status}}",
-                        "refId": "A"
+                        "refId": "A",
+                        "step": 10
                      }
                   ],
                   "thresholds": [ ],
@@ -145,7 +145,7 @@
                         "expr": "histogram_quantile(0.99, sum by (le) (cluster_job:loki_request_duration_seconds_bucket:sum_rate{cluster=~\"$cluster\", job=~\"($namespace)/distributor\"})) * 1e3",
                         "format": "time_series",
                         "intervalFactor": 2,
-                        "legendFormat": "99th percentile",
+                        "legendFormat": "99th Percentile",
                         "refId": "A",
                         "step": 10
                      },
@@ -153,7 +153,7 @@
                         "expr": "histogram_quantile(0.50, sum by (le) (cluster_job:loki_request_duration_seconds_bucket:sum_rate{cluster=~\"$cluster\", job=~\"($namespace)/distributor\"})) * 1e3",
                         "format": "time_series",
                         "intervalFactor": 2,
-                        "legendFormat": "50th percentile",
+                        "legendFormat": "50th Percentile",
                         "refId": "B",
                         "step": 10
                      },
@@ -221,7 +221,6 @@
                      "3xx": "#6ED0E0",
                      "4xx": "#EF843C",
                      "5xx": "#E24D42",
-                     "cancel": "#A9A9A9",
                      "error": "#E24D42",
                      "success": "#7EB26D"
                   },
@@ -259,7 +258,8 @@
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "{{status}}",
-                        "refId": "A"
+                        "refId": "A",
+                        "step": 10
                      }
                   ],
                   "thresholds": [ ],
@@ -333,7 +333,7 @@
                         "expr": "histogram_quantile(0.99, sum by (le) (cluster_job_route:loki_request_duration_seconds_bucket:sum_rate{cluster=~\"$cluster\", job=~\"($namespace)/ingester-zone.*\", route=\"/logproto.Pusher/Push\"})) * 1e3",
                         "format": "time_series",
                         "intervalFactor": 2,
-                        "legendFormat": "99th percentile",
+                        "legendFormat": "99th Percentile",
                         "refId": "A",
                         "step": 10
                      },
@@ -341,7 +341,7 @@
                         "expr": "histogram_quantile(0.50, sum by (le) (cluster_job_route:loki_request_duration_seconds_bucket:sum_rate{cluster=~\"$cluster\", job=~\"($namespace)/ingester-zone.*\", route=\"/logproto.Pusher/Push\"})) * 1e3",
                         "format": "time_series",
                         "intervalFactor": 2,
-                        "legendFormat": "50th percentile",
+                        "legendFormat": "50th Percentile",
                         "refId": "B",
                         "step": 10
                      },
@@ -409,7 +409,6 @@
                      "3xx": "#6ED0E0",
                      "4xx": "#EF843C",
                      "5xx": "#E24D42",
-                     "cancel": "#A9A9A9",
                      "error": "#E24D42",
                      "success": "#7EB26D"
                   },
@@ -447,7 +446,8 @@
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "{{status}}",
-                        "refId": "A"
+                        "refId": "A",
+                        "step": 10
                      }
                   ],
                   "thresholds": [ ],
@@ -521,7 +521,7 @@
                         "expr": "histogram_quantile(0.99, sum by (le) (cluster_job_route:loki_request_duration_seconds_bucket:sum_rate{cluster=~\"$cluster\", job=~\"($namespace)/ingester\", route=\"/logproto.Pusher/Push\"})) * 1e3",
                         "format": "time_series",
                         "intervalFactor": 2,
-                        "legendFormat": "99th percentile",
+                        "legendFormat": "99th Percentile",
                         "refId": "A",
                         "step": 10
                      },
@@ -529,7 +529,7 @@
                         "expr": "histogram_quantile(0.50, sum by (le) (cluster_job_route:loki_request_duration_seconds_bucket:sum_rate{cluster=~\"$cluster\", job=~\"($namespace)/ingester\", route=\"/logproto.Pusher/Push\"})) * 1e3",
                         "format": "time_series",
                         "intervalFactor": 2,
-                        "legendFormat": "50th percentile",
+                        "legendFormat": "50th Percentile",
                         "refId": "B",
                         "step": 10
                      },
@@ -597,7 +597,6 @@
                      "3xx": "#6ED0E0",
                      "4xx": "#EF843C",
                      "5xx": "#E24D42",
-                     "cancel": "#A9A9A9",
                      "error": "#E24D42",
                      "success": "#7EB26D"
                   },
@@ -635,7 +634,8 @@
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "{{status}}",
-                        "refId": "A"
+                        "refId": "A",
+                        "step": 10
                      }
                   ],
                   "thresholds": [ ],
@@ -710,21 +710,24 @@
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "99th Percentile",
-                        "refId": "A"
+                        "refId": "A",
+                        "step": 10
                      },
                      {
                         "expr": "histogram_quantile(0.50, sum(rate(loki_index_request_duration_seconds_bucket{cluster=~\"$cluster\",job=~\"($namespace)/ingester.*\", operation=\"index_chunk\"}[$__rate_interval])) by (le)) * 1e3",
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "50th Percentile",
-                        "refId": "B"
+                        "refId": "B",
+                        "step": 10
                      },
                      {
                         "expr": "sum(rate(loki_index_request_duration_seconds_sum{cluster=~\"$cluster\",job=~\"($namespace)/ingester.*\", operation=\"index_chunk\"}[$__rate_interval])) * 1e3 / sum(rate(loki_index_request_duration_seconds_count{cluster=~\"$cluster\",job=~\"($namespace)/ingester.*\", operation=\"index_chunk\"}[$__rate_interval]))",
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "Average",
-                        "refId": "C"
+                        "refId": "C",
+                        "step": 10
                      }
                   ],
                   "thresholds": [ ],
@@ -782,7 +785,6 @@
                      "3xx": "#6ED0E0",
                      "4xx": "#EF843C",
                      "5xx": "#E24D42",
-                     "cancel": "#A9A9A9",
                      "error": "#E24D42",
                      "success": "#7EB26D"
                   },
@@ -820,7 +822,8 @@
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "{{status}}",
-                        "refId": "A"
+                        "refId": "A",
+                        "step": 10
                      }
                   ],
                   "thresholds": [ ],
@@ -895,21 +898,24 @@
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "99th Percentile",
-                        "refId": "A"
+                        "refId": "A",
+                        "step": 10
                      },
                      {
                         "expr": "histogram_quantile(0.50, sum(rate(loki_boltdb_shipper_request_duration_seconds_bucket{cluster=~\"$cluster\",job=~\"($namespace)/ingester\", operation=\"WRITE\"}[$__rate_interval])) by (le)) * 1e3",
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "50th Percentile",
-                        "refId": "B"
+                        "refId": "B",
+                        "step": 10
                      },
                      {
                         "expr": "sum(rate(loki_boltdb_shipper_request_duration_seconds_sum{cluster=~\"$cluster\",job=~\"($namespace)/ingester\", operation=\"WRITE\"}[$__rate_interval])) * 1e3 / sum(rate(loki_boltdb_shipper_request_duration_seconds_count{cluster=~\"$cluster\",job=~\"($namespace)/ingester\", operation=\"WRITE\"}[$__rate_interval]))",
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "Average",
-                        "refId": "C"
+                        "refId": "C",
+                        "step": 10
                      }
                   ],
                   "thresholds": [ ],

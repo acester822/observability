@@ -1,8 +1,3 @@
-usage_report:
-  reporting_enabled: false
-
-multitenancy_enabled: false
-
 server:
   http_listen_port: 3200
   grpc_listen_port: 9095
@@ -10,31 +5,53 @@ server:
 
 distributor:
   receivers:                           # this configuration will listen on all ports and protocols that tempo is capable of.
+    jaeger:                            # the receives all come from the OpenTelemetry collector.  more configuration information can
+      protocols:                       # be found there: https://github.com/open-telemetry/opentelemetry-collector/tree/main/receiver
+        thrift_http:                   #
+        grpc:                          # for a production deployment you should only enable the receivers you need!
+        thrift_binary:
+        thrift_compact:
+    zipkin:
     otlp:
       protocols:
         http:
         grpc:
+    opencensus:
 
 memberlist:
   join_members: [ tempo-memberlist:7946 ]
 
-compactor:
-  ring:
-    kvstore:
-      store: memberlist
+metrics_generator:
+  registry:
+    external_labels:
+      source: tempo
+      cluster: docker-compose
+  storage:
+    path: /tmp/tempo/generator/wal
+    remote_write:
+      - url: http://gateway:8080/api/v1/push
+        send_exemplars: true
+
+storage:
+  trace:
+    backend: s3                        # backend configuration to use
+    wal:
+      path: /tmp/tempo/wal             # where to store the the wal locally
+    s3:
+      bucket: tempo-data                    # how to store data in s3
+      endpoint: minio:9000
+      access_key: acester822
+      secret_key: 228retseca
+      insecure: true
+      # For using AWS, select the appropriate regional endpoint and region
+      # endpoint: s3.dualstack.us-west-2.amazonaws.com
+      # region: us-west-2
 
 querier:
   frontend_worker:
     frontend_address: tempo:9095
     
-storage:
-  trace:
-    backend: s3
-    wal:
-      path: /tmp/tempo/wal
-    s3:
-      bucket: tempo-data
-      endpoint: minio:9000
-      access_key: acester822
-      secret_key: 228retseca
-      insecure: true
+overrides:
+  defaults:
+    metrics_generator:
+      processors: ['service-graphs', 'span-metrics']

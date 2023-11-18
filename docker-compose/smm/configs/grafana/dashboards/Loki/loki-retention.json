@@ -73,21 +73,24 @@
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "{{pod}}",
-                        "legendLink": null
+                        "legendLink": null,
+                        "step": 10
                      },
                      {
                         "expr": "min(kube_pod_container_resource_requests{cluster=~\"$cluster\", namespace=~\"$namespace\", container=\"compactor\", resource=\"cpu\"} > 0)",
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "request",
-                        "legendLink": null
+                        "legendLink": null,
+                        "step": 10
                      },
                      {
                         "expr": "min(container_spec_cpu_quota{cluster=~\"$cluster\", namespace=~\"$namespace\", container=\"compactor\"} / container_spec_cpu_period{cluster=~\"$cluster\", namespace=~\"$namespace\", container=\"compactor\"})",
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "limit",
-                        "legendLink": null
+                        "legendLink": null,
+                        "step": 10
                      }
                   ],
                   "thresholds": [ ],
@@ -171,21 +174,24 @@
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "{{pod}}",
-                        "legendLink": null
+                        "legendLink": null,
+                        "step": 10
                      },
                      {
                         "expr": "min(kube_pod_container_resource_requests{cluster=~\"$cluster\", namespace=~\"$namespace\", container=\"compactor\", resource=\"memory\"} > 0)",
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "request",
-                        "legendLink": null
+                        "legendLink": null,
+                        "step": 10
                      },
                      {
                         "expr": "min(container_spec_memory_limit_bytes{cluster=~\"$cluster\", namespace=~\"$namespace\", container=\"compactor\"} > 0)",
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "limit",
-                        "legendLink": null
+                        "legendLink": null,
+                        "step": 10
                      }
                   ],
                   "thresholds": [ ],
@@ -258,7 +264,8 @@
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "{{pod}}",
-                        "legendLink": null
+                        "legendLink": null,
+                        "step": 10
                      }
                   ],
                   "thresholds": [ ],
@@ -451,7 +458,8 @@
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "duration",
-                        "legendLink": null
+                        "legendLink": null,
+                        "step": 10
                      }
                   ],
                   "thresholds": [ ],
@@ -526,7 +534,8 @@
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "{{success}}",
-                        "legendLink": null
+                        "legendLink": null,
+                        "step": 10
                      }
                   ],
                   "thresholds": [ ],
@@ -613,7 +622,8 @@
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "{{action}}",
-                        "legendLink": null
+                        "legendLink": null,
+                        "step": 10
                      }
                   ],
                   "thresholds": [ ],
@@ -688,7 +698,8 @@
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "{{table}}-{{action}}",
-                        "legendLink": null
+                        "legendLink": null,
+                        "step": 10
                      }
                   ],
                   "thresholds": [ ],
@@ -763,7 +774,8 @@
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "{{table}}",
-                        "legendLink": null
+                        "legendLink": null,
+                        "step": 10
                      }
                   ],
                   "thresholds": [ ],
@@ -926,21 +938,24 @@
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "99th Percentile",
-                        "refId": "A"
+                        "refId": "A",
+                        "step": 10
                      },
                      {
                         "expr": "histogram_quantile(0.50, sum(rate(loki_boltdb_shipper_retention_marker_table_processed_duration_seconds_bucket{cluster=~\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])) by (le)) * 1e3",
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "50th Percentile",
-                        "refId": "B"
+                        "refId": "B",
+                        "step": 10
                      },
                      {
                         "expr": "sum(rate(loki_boltdb_shipper_retention_marker_table_processed_duration_seconds_sum{cluster=~\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])) * 1e3 / sum(rate(loki_boltdb_shipper_retention_marker_table_processed_duration_seconds_count{cluster=~\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval]))",
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "Average",
-                        "refId": "C"
+                        "refId": "C",
+                        "step": 10
                      }
                   ],
                   "thresholds": [ ],
@@ -1103,21 +1118,24 @@
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "99th Percentile",
-                        "refId": "A"
+                        "refId": "A",
+                        "step": 10
                      },
                      {
                         "expr": "histogram_quantile(0.50, sum(rate(loki_boltdb_shipper_retention_sweeper_chunk_deleted_duration_seconds_bucket{cluster=~\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])) by (le)) * 1e3",
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "50th Percentile",
-                        "refId": "B"
+                        "refId": "B",
+                        "step": 10
                      },
                      {
                         "expr": "sum(rate(loki_boltdb_shipper_retention_sweeper_chunk_deleted_duration_seconds_sum{cluster=~\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])) * 1e3 / sum(rate(loki_boltdb_shipper_retention_sweeper_chunk_deleted_duration_seconds_count{cluster=~\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval]))",
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "Average",
-                        "refId": "C"
+                        "refId": "C",
+                        "step": 10
                      }
                   ],
                   "thresholds": [ ],
@@ -1204,7 +1222,8 @@
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "lag",
-                        "legendLink": null
+                        "legendLink": null,
+                        "step": 10
                      }
                   ],
                   "thresholds": [ ],
@@ -1279,7 +1298,8 @@
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "count",
-                        "legendLink": null
+                        "legendLink": null,
+                        "step": 10
                      }
                   ],
                   "thresholds": [ ],
@@ -1354,7 +1374,8 @@
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "{{status}}",
-                        "legendLink": null
+                        "legendLink": null,
+                        "step": 10
                      }
                   ],
                   "thresholds": [ ],
