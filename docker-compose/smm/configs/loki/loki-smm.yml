@@ -42,7 +42,6 @@ chunk_store_config:
       enabled: true
       
 frontend:
-  address: 127.0.0.1
   max_outstanding_per_tenant: 2048 # default = 100]
   log_queries_longer_than: 20s
       

@@ -52,8 +52,3 @@ storage:
 querier:
   frontend_worker:
     frontend_address: tempo:9095
-    
-overrides:
-  defaults:
-    metrics_generator:
-      processors: ['service-graphs', 'span-metrics']
