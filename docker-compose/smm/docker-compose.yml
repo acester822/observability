@@ -205,9 +205,9 @@ services:
       - MINIO_ROOT_USER=acester822
       - MINIO_ROOT_PASSWORD=228retseca
       - MINIO_PROMETHEUS_AUTH_TYPE=public
-      - MINIO_UPDATE=on
-      - MINIO_PROMETHEUS_URL="http://gateway:8080/prometheus"
-      - MINIO_PROMETHEUS_JOB_ID="integrations/minio"
+      #- MINIO_UPDATE=on
+      #- MINIO_PROMETHEUS_URL="http://gateway:8080/prometheus"
+      #- MINIO_PROMETHEUS_JOB_ID="integrations/minio"
     volumes:
       - ./Data:/data:delegated
     healthcheck:
