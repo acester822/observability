@@ -77,30 +77,6 @@ discovery.relabel "docker_containers" {
   }
 }
 
-// Faro Receiver
-
-faro.receiver "default" {
-  // https://grafana.com/docs/agent/next/flow/reference/components/faro.receiver/
-  server {
-    listen_address       = "0.0.0.0"
-    listen_port          = 12347
-    cors_allowed_origins = ["*"]
-  }
-
-  extra_log_labels = {
-    "source" = "faro",
-  }
-
-  sourcemaps {
-    download = true
-  }
-
-  output {
-    logs   = [loki.process.faro.receiver]
-    traces = [otelcol.processor.attributes.default.input]
-  }
-}
-
 // Metrics
 // Docs (Scrape): https://grafana.com/docs/agent/latest/flow/reference/components/prometheus.scrape/
 // Docs (Relabel): https://grafana.com/docs/agent/latest/flow/reference/components/prometheus.relabel/
@@ -108,23 +84,6 @@ faro.receiver "default" {
 
 prometheus.exporter.agent "host" {
   // https://grafana.com/docs/agent/next/flow/reference/components/prometheus.exporter.agent/
-}
-
-prometheus.exporter.cadvisor "docker" {
-  // https://grafana.com/docs/agent/next/flow/reference/components/prometheus.exporter.cadvisor/
-  docker_host      = "unix:///var/run/docker.sock"
-  storage_duration = "1m"
-}
-
-prometheus.exporter.mysql "grafanadb" {
-  // https://grafana.com/docs/agent/latest/flow/reference/components/prometheus.exporter.mysql/
-  data_source_name  = "root:" + env("GRAFANA_DB_MARIADB_ROOT_PASSWORD") + "@(" + env("GRAFANA_DB_CONTAINER_NAME") + ":3306)/"
-  enable_collectors = ["engine_innodb_status", "heartbeat", "info_schema.clientstats", "mysql.user"]
-}
-
-prometheus.exporter.redis "grafana_caching" {
-  // https://grafana.com/docs/agent/latest/flow/reference/components/prometheus.exporter.redis/
-  redis_addr = env("GRAFANA_REDIS_CONTAINER_NAME") + ":6379"
 }
 
 prometheus.exporter.unix "host" {
@@ -136,28 +95,9 @@ prometheus.exporter.unix "host" {
 prometheus.scrape "agent_exporter" {
   // Configure a prometheus.scrape component to collect agent_exporter metrics.
   targets    = prometheus.exporter.agent.host.targets
-  forward_to = [prometheus.remote_write.mimir.receiver, prometheus.remote_write.prometheus.receiver]
+  forward_to = [prometheus.remote_write.mimir.receiver]
   scrape_interval = "14s"
    // Why does this need to be larger than the interval?  
-}
-
-prometheus.scrape "cadvisor_exporter" {
-  // Configure a prometheus.scrape component to collect cadvisor_exporter metrics.
-  targets    = prometheus.exporter.cadvisor.docker.targets
-  forward_to = [prometheus.relabel.cadvisor_exporter.receiver]
-  scrape_interval = "14s"
-   // Why does this need to be larger than the interval?
-}
-
-prometheus.scrape "default" {
-  targets = [
-    {"__address__" = "demo.robustperception.io:9090", "env" = "demo"},
-    {"__address__" = "prometheus.demo.do.prometheus.io", "env" = "demo"},
-  ]
-  job_name = "example/prometheus"
-  forward_to = [prometheus.remote_write.mimir.receiver, prometheus.remote_write.prometheus.receiver]
-  scrape_interval = "14s"
-   // Why does this need to be larger than the interval?
 }
 
 prometheus.scrape "docker_containers" {
@@ -175,7 +115,7 @@ prometheus.scrape "docker_local" {
     {"__address__" = "host.docker.internal:9323", "env" = "host"},
   ]
   job_name = "monitoring/docker"
-  forward_to = [prometheus.remote_write.mimir.receiver, prometheus.remote_write.prometheus.receiver]
+  forward_to = [prometheus.remote_write.mimir.receiver]
   scrape_interval = "14s"
    // Why does this need to be larger than the interval?
 }
@@ -186,7 +126,7 @@ prometheus.scrape "minio" {
   ]
   job_name = "integrations/minio"
   metrics_path = "/minio/prometheus/metrics"
-  forward_to = [prometheus.remote_write.mimir.receiver, prometheus.remote_write.prometheus.receiver]
+  forward_to = [prometheus.remote_write.mimir.receiver]
   scrape_interval = "14s"
    // Why does this need to be larger than the interval?
 }
@@ -197,15 +137,7 @@ prometheus.scrape "minio_v2" {
   ]
   job_name = "integrations/minio"
   metrics_path = "/minio/v2/metrics/cluster"
-  forward_to = [prometheus.remote_write.mimir.receiver, prometheus.remote_write.prometheus.receiver]
-  scrape_interval = "14s"
-   // Why does this need to be larger than the interval?
-}
-
-prometheus.scrape "mysql_exporter" {
-  // Configure a prometheus.scrape component to collect mysql_exporter metrics.
-  targets    = prometheus.exporter.mysql.grafanadb.targets
-  forward_to = [prometheus.relabel.mysql_exporter.receiver]
+  forward_to = [prometheus.remote_write.mimir.receiver]
   scrape_interval = "14s"
    // Why does this need to be larger than the interval?
 }
@@ -223,30 +155,13 @@ prometheus.scrape "prometheus" {
     {"__address__" = "prometheus:9090", "app" = "prometheus", "container" = "prometheus", "pod" = "prometheus", "service" = "prometheus"},
   ]
   job_name = "prometheus"
-  forward_to = [prometheus.remote_write.mimir.receiver, prometheus.remote_write.prometheus.receiver]
+  forward_to = [prometheus.remote_write.mimir.receiver]
   scrape_interval = "14s"
    // Why does this need to be larger than the interval?
-}
-
-prometheus.scrape "redis_exporter" {
-  // Configure a prometheus.scrape component to collect redis_exporter metrics.
-  targets    = prometheus.exporter.redis.grafana_caching.targets
-  forward_to = [prometheus.relabel.redis_exporter.receiver]
-  scrape_interval = "14s"
-   // Why does this need to be larger than the interval?
-}
-
-prometheus.relabel "cadvisor_exporter" {
-  forward_to = [prometheus.remote_write.mimir.receiver, prometheus.remote_write.prometheus.receiver]
-  rule {
-    action        = "replace"
-    replacement   = "integrations/docker"
-    target_label  = "job"
-  }
 }
 
 prometheus.relabel "docker_containers" {
-  forward_to = [prometheus.remote_write.mimir.receiver, prometheus.remote_write.prometheus.receiver]
+  forward_to = [prometheus.remote_write.mimir.receiver]
   rule {
     // Drop Services that dont expose Metrics (based on App Label)
     action        = "drop"
@@ -275,22 +190,8 @@ prometheus.relabel "docker_containers" {
   }
 }
 
-prometheus.relabel "mysql_exporter" {
-  forward_to = [prometheus.remote_write.mimir.receiver, prometheus.remote_write.prometheus.receiver]
-  rule {
-    action        = "replace"
-    replacement   = "grafana-mariadb-db"
-    target_label  = "instance"
-  }
-  rule {
-    action        = "replace"
-    replacement   = "integrations/mysql"
-    target_label  = "job"
-  }
-}
-
 prometheus.relabel "node_exporter" {
-  forward_to = [prometheus.remote_write.mimir.receiver, prometheus.remote_write.prometheus.receiver]
+  forward_to = [prometheus.remote_write.mimir.receiver]
   rule {
     action        = "replace"
     replacement   = "host"
@@ -303,28 +204,10 @@ prometheus.relabel "node_exporter" {
   }
 }
 
-prometheus.relabel "redis_exporter" {
-  forward_to = [prometheus.remote_write.mimir.receiver, prometheus.remote_write.prometheus.receiver]
-  rule {
-    action        = "replace"
-    replacement   = "integrations/redis_exporter"
-    target_label  = "job"
-  }
-}
 
 prometheus.remote_write "mimir" {
   endpoint {
     url = "http://gateway:8080/api/v1/push"
-  }
-  external_labels = {
-    "cluster" = "docker-compose",
-    "source"  = "agent-flow",
-  }
-}
-
-prometheus.remote_write "prometheus" {
-  endpoint {
-    url = "http://gateway:9090/api/v1/write"
   }
   external_labels = {
     "cluster" = "docker-compose",
@@ -377,29 +260,6 @@ loki.process "docker_containers" {
   }
 }
 
-loki.process "faro" {
-  // https://grafana.com/docs/agent/latest/flow/reference/components/loki.process/
-  forward_to = [loki.write.local.receiver]
-  stage.logfmt {
-    mapping = { 
-      "app_name" = "",
-      "kind" = "",
-    }
-  }
-  stage.labels {
-    values = {
-      app  = "app_name",
-      app_id  = "app_name",
-      kind = "",
-    }
-  }
-  stage.static_labels {
-    values = {
-      source = "faro",
-    }
-  }
-}
-
 loki.source.docker "docker_containers" {
   // https://grafana.com/docs/agent/latest/flow/reference/components/loki.source.docker/
   host          = "unix:///var/run/docker.sock"
@@ -408,19 +268,6 @@ loki.source.docker "docker_containers" {
   )
   forward_to    = [loki.process.docker_containers.receiver]
   relabel_rules = loki.relabel.docker_containers.rules
-}
-
-local.file_match "nginxlogs" {
-  // https://grafana.com/docs/agent/latest/flow/reference/components/local.file_match/
-  path_targets = [
-    {"__path__" = "/var/log/nginx/*log", "app" = "nginx-proxy", "job" = "integrations/nginx", "namespace" = "gateway"},
-  ]
-}
-
-loki.source.file "nginxlogs" {
-  // https://grafana.com/docs/agent/latest/flow/reference/components/loki.source.file/
-  targets    = local.file_match.nginxlogs.targets
-  forward_to = [loki.write.local.receiver]
 }
 
 local.file_match "varlogs" {
@@ -543,7 +390,7 @@ otelcol.exporter.prometheus "default" {
   include_scope_info   = true
   include_scope_labels = true
   include_target_info  = true
-  forward_to           = [prometheus.remote_write.mimir.receiver, prometheus.remote_write.prometheus.receiver]
+  forward_to           = [prometheus.remote_write.mimir.receiver]
 }
 
 otelcol.exporter.otlp "default" {

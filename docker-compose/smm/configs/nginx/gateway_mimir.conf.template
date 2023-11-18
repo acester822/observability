@@ -2,7 +2,7 @@ server {
     listen 8080;
     listen [::]:8080;
 
-    location = / {
+    location = /hc {
       return 200 'OK';
       auth_basic off;
       access_log off;
