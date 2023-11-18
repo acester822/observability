@@ -24,15 +24,15 @@ memberlist:
 metrics_generator:
   registry:
     external_labels:
-      source: tempo
       cluster: docker-compose
+      namespace: monitoring
   storage:
-    trace:
-      backend: s3
-      path: /tmp/tempo/generator/wal
+    path: /tmp/tempo/generator/wal
     remote_write:
-      - url: http://gateway:8080/api/v1/push
+      - url: http://mimir:8080/api/v1/push
         send_exemplars: true
+        headers:
+          X-Scope-OrgID: "anonymous"
 
 storage:
   trace:
@@ -52,3 +52,6 @@ storage:
 querier:
   frontend_worker:
     frontend_address: tempo:9095
+
+overrides:
+  metrics_generator_processors: [service-graphs, span-metrics] # enables metrics generator
