@@ -39,7 +39,7 @@ services:
       - "12345"
     # scale up support
     deploy:
-      replicas: 4
+      replicas: 2
     networks:
       default:
         aliases:
@@ -113,7 +113,7 @@ services:
     # Horizontally scale up support(Monolithic mode)
     # https://grafana.com/docs/mimir/latest/references/architecture/deployment-modes/#monolithic-mode
     deploy:
-      replicas: 4
+      replicas: 2
     networks:
       default:
         aliases:
@@ -138,7 +138,7 @@ services:
     # Horizontally scale up support(Monolithic mode)
     # https://grafana.com/docs/loki/latest/fundamentals/architecture/deployment-modes/#simple-scalable-deployment-mode
     deploy:
-      replicas: 4
+      replicas: 2
     networks:
       default:
         aliases:
@@ -164,7 +164,7 @@ services:
      # Horizontally scale up support(Monolithic mode)
      # https://grafana.com/docs/tempo/latest/setup/deployment/#scaling-monolithic-mode
     deploy:
-      replicas: 4
+      replicas: 2
     networks:
       default:
         aliases:
