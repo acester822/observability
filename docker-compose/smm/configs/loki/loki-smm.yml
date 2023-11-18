@@ -47,11 +47,6 @@ frontend:
   log_queries_longer_than: 20s
       
 ingester:
-  lifecycler:
-    ring:
-      kvstore:
-      store: memberlist
-    final_sleep: 0s
   chunk_idle_period: 30m       # Any chunk not receiving new logs in this time will be flushed
   max_chunk_age: 1h            # All chunks will be flushed when they hit this age, default is 1h
   chunk_retain_period: 30s
