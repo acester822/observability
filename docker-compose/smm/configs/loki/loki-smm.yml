@@ -2,6 +2,9 @@ auth_enabled: false
 
 server:
   http_listen_port: 3100
+  grpc_listen_port: 9095
+  http_server_read_timeout: 300s # allow longer time span queries
+  http_server_write_timeout: 300s # allow longer time span queries
   log_level: warn
 
 common:
@@ -39,35 +42,26 @@ chunk_store_config:
       enabled: true
       
 frontend:
-      compress_responses: true
+  address: 127.0.0.1
+  max_outstanding_per_tenant: 2048 # default = 100]
+  log_queries_longer_than: 20s
       
 ingester:
-      chunk_block_size: 262144
-      chunk_encoding: gzip
-      chunk_retain_period: 10m
-      chunk_target_size: 0
-      flush_check_period: 2m
-      lifecycler:
-        ring:
-          kvstore:
-            store: memberlist
-      max_chunk_age: 30m
-      max_returned_stream_errors: 10
-      max_transfer_retries: 0
-      query_store_max_look_back_period: 0
-      sync_min_utilization: 0
-      sync_period: 0
+  lifecycler:
+    ring:
+      kvstore:
+      store: memberlist
+    final_sleep: 0s
+  chunk_idle_period: 30m       # Any chunk not receiving new logs in this time will be flushed
+  max_chunk_age: 1h            # All chunks will be flushed when they hit this age, default is 1h
+  chunk_retain_period: 30s
+  max_transfer_retries: 0
 
 query_range:
   parallelise_shardable_queries: false
   split_queries_by_interval: 0s
   align_queries_with_step: true
-  cache_results: true
-  results_cache:
-    cache:
-      embedded_cache:
-        enabled: true
-        
+
 limits_config:
   enforce_metric_name: false
   max_cache_freshness_per_query: 10m
@@ -88,6 +82,10 @@ limits_config:
 compactor:
   working_directory: /tmp/compactor
   shared_store: s3
+  compaction_interval: 10m
+  retention_enabled: true
+  retention_delete_delay: 2h
+  retention_delete_worker_count: 100
 
 # -reporting.enabled=false
 analytics:
