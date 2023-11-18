@@ -17,6 +17,7 @@ common:
       access_key_id: acester822
       secret_access_key: 228retseca
       insecure: true
+      s3forcepathstyle: true
 
 memberlist:
   join_members: [ loki-memberlist:7946 ]
