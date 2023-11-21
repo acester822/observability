@@ -28,7 +28,7 @@ exporters:
   prometheusremotewrite:
     endpoint: http://grafana-agent-cluster:12345/api/v1/push
   otlp:
-    endpoint: grafana-agent-cluster:12345
+    endpoint: http://grafana-agent-cluster:4317
     tls:
       insecure: true
 
