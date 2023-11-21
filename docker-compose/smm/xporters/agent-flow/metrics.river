@@ -291,6 +291,7 @@ loki.write "local" {
   external_labels = {
     "cluster" = "docker-compose",
     "source"  = "agent-flow",
+    "namespace" = "monitoring-system",
   }
 }
 
@@ -320,22 +321,8 @@ pyroscope.write "local" {
 
 // Traces
 
-otelcol.receiver.jaeger "default" {
-  // https://grafana.com/docs/agent/latest/flow/reference/components/otelcol.receiver.jaeger/
-  protocols {
-    grpc {}
-    thrift_http {}
-    thrift_binary {}
-    thrift_compact {}
-  }
-  output {
-    traces = [otelcol.processor.attributes.default.input]
-  }
-}
-
 otelcol.receiver.otlp "default" {
   // https://grafana.com/docs/agent/latest/flow/reference/components/otelcol.receiver.otlp/
-  grpc {}
   http {}
   output {
     metrics = [otelcol.processor.attributes.default.input]

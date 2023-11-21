@@ -31,7 +31,7 @@ server {
       proxy_pass      http://${TEMPO_DISTRIBUTOR_HOST}:9411/spans;
     }
     location = /otlp/v1/traces {
-      proxy_pass      http://${TEMPO_DISTRIBUTOR_HOST}:4318/v1/traces;
+      proxy_pass      http://${TEMPO_DISTRIBUTOR_HOST}:4317/v1/traces;
     }
 
     location = /distributor/ring {
