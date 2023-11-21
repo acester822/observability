@@ -11,7 +11,7 @@ version: '3.9'
 services:
 
   agent: # All
-    image: grafana/agent:v0.37.2
+    image: grafana/agent:v0.38.0
     depends_on:
       tempo:
         condition: service_started
@@ -204,7 +204,7 @@ services:
       - sh
       - -euc
       - |
-        mkdir -p /data/mimir-data /data/mimir-rules /data/mimir-alertmanager /data/mimir-compactor /data/mimir-ingester && \
+        mkdir -p /data/mimir-data /data/mimir-rules /data/mimir-alertmanager && \
         mkdir -p /data/loki-data /data/loki-rules && \
         mkdir -p /data/tempo-data  && \
         mkdir -p /data/pyroscope-data && \
@@ -299,7 +299,7 @@ services:
       rules load /agent-mixin/rules.yaml /agent-mixin/alerts.yaml
 
   grafana: #From AIO
-    image: grafana/grafana-dev:10.3.0-144189
+    image: grafana/grafana:10.2.2
     container_name: grafana
     command:
       - --config=/etc/grafana-config/grafana.ini
@@ -318,12 +318,5 @@ services:
       - GF_TRACING_OPENTELEMETRY_OTLP_ADDRESS=agent:4317
       - GF_TRACING_OPENTELEMETRY_CUSTOM_ATTRIBUTES=cluster:docker-compose,namespace:monitoring
       - GF_INSTALL_PLUGINS=pyroscope-panel
-    labels:
-      - "traefik.enable=true"
-      - 'traefik.http.routers.grafana.rule=Host(`grafana.freetherabbit.xyz`)'
-      - "traefik.http.routers.grafana.entrypoints=websecure"
-      - "traefik.http.routers.grafana.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.grafana.middlewares=traefik-forward-auth"
-      - "traefik.docker.network=utilities"
     ports:
       - "3000:3000"
