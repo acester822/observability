@@ -45,6 +45,14 @@ services:
         aliases:
           - grafana-agent-cluster
 
+  opentelemetry-collector: #All
+    container_name: otel-collector
+    image: otel/opentelemetry-collector-contrib:latest
+    volumes:
+      - /mnt/Media/11182023_0837a/portainer-compose-unpacker/stacks/smm/observability/docker-compose/smm/xporters/otel/config.yaml:/etc/otel-config.yaml
+    command:
+      - "--config=/etc/otel-config.yaml"
+
   gateway: #All
     image: nginxinc/nginx-unprivileged:1.25-alpine
     container_name: gateway
